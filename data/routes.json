@@ -1,0 +1,48 @@
+[
+  {
+    "id": "goodmayes",
+    "name": "Green Lane, Ilford gyratory and Seven Kings loop",
+    "summary": "Residential streets off Goodmayes Road, the busy A1083 Green Lane, the Ilford gyratory and back through Seven Kings.",
+    "features": ["roundabout", "mini-roundabout", "traffic lights", "zebra", "pelican", "busy A-road", "residential"],
+    "centre": { "name": "Goodmayes Driving Test Centre", "address": "98 Goodmayes Road, Ilford", "postcode": "IG3 9UZ", "lat": 51.563757, "lng": 0.109954 },
+    "start": { "lat": 51.564052, "lng": 0.109205, "heading": 262 },
+    "roads": ["Kildowan Rd", "Granton Rd", "Green Lane (A1083)", "Winston Way (A118)", "Griggs Approach", "Ley St", "Benton Rd", "Cameron Rd", "High Road (A118)", "Seven Kings Rd", "Felbrigge Rd"],
+    "waypoints": [[51.564052,0.109205],[51.563238,0.108047],[51.561417,0.101323],[51.558948,0.090378],[51.560279,0.078435],[51.563602,0.081844],[51.56689,0.086639],[51.564603,0.095621],[51.563306,0.097866],[51.563264,0.103159],[51.564121,0.1095]]
+  },
+  {
+    "id": "mill-hill",
+    "name": "Hale Lane, A41 Edgware Way and Deans Lane double mini-roundabout loop",
+    "summary": "Out along Hale Lane, a stretch of the A41 dual carriageway and back via the Deans Lane double mini-roundabout.",
+    "features": ["roundabout", "mini-roundabout", "double mini-roundabout", "traffic lights", "zebra", "dual carriageway", "residential"],
+    "centre": { "name": "Mill Hill Driving Test Centre", "address": "Unit 9, Grannard Business Centre, Bunns Lane, London", "postcode": "NW7 2DQ", "lat": 51.61033, "lng": -0.247012 },
+    "start": { "lat": 51.610551, "lng": -0.24776, "heading": 136 },
+    "waypoints": [[51.610551,-0.24776],[51.609589,-0.249068],[51.607237,-0.253454],[51.605627,-0.264148],[51.611463,-0.265439],[51.612797,-0.267662],[51.615364,-0.267985],[51.620163,-0.267261],[51.619637,-0.273551],[51.617,-0.26614],[51.61558,-0.26641],[51.615821,-0.264208],[51.61586,-0.262457],[51.615364,-0.255348],[51.612232,-0.249479],[51.610752,-0.248123]]
+  },
+  {
+    "id": "isleworth",
+    "name": "Twickenham Road, A316 Chertsey Road and Whitton Dene loop",
+    "summary": "Twickenham Road, the A316 Chertsey Road dual carriageway and back through Whitton Dene.",
+    "features": ["roundabout", "mini-roundabout", "traffic lights", "dual carriageway", "busy A-road"],
+    "centre": { "name": "Isleworth (Fleming Way) Driving Test Centre", "address": "The Wireless Factory, Fleming Way, Isleworth", "postcode": "TW7 6DB", "lat": 51.466075, "lng": -0.337166 },
+    "start": { "lat": 51.467321, "lng": -0.336013, "heading": 70 },
+    "waypoints": [[51.467321,-0.336013],[51.467507,-0.33299],[51.462997,-0.331756],[51.457594,-0.330659],[51.454092,-0.336664],[51.457387,-0.340855],[51.458524,-0.347718],[51.463109,-0.347802],[51.46713,-0.337343]]
+  },
+  {
+    "id": "morden",
+    "name": "Morden town centre, St Helier Avenue and Love Lane loop",
+    "summary": "Through Morden town centre's one-way system, along the St Helier Avenue dual carriageway and back via Love Lane.",
+    "features": ["traffic lights", "roundabout", "mini-roundabout", "dual carriageway", "one-way system", "busy A-road", "residential"],
+    "centre": { "name": "Morden Driving Test Centre", "address": "10 Tudor Drive, Morden", "postcode": "SM4 4PE", "lat": 51.386558, "lng": -0.212412 },
+    "start": { "lat": 51.386645, "lng": -0.212858, "heading": 137 },
+    "waypoints": [[51.386645,-0.212858],[51.390326,-0.205608],[51.398682,-0.198455],[51.401555,-0.192119],[51.400086,-0.18821],[51.392485,-0.187853],[51.388964,-0.192464],[51.386015,-0.197962],[51.383666,-0.202621],[51.38421,-0.207418],[51.386485,-0.212699]]
+  },
+  {
+    "id": "belvedere",
+    "name": "Knee Hill, Abbey Road and Picardy Road hill loop",
+    "summary": "Up Knee Hill and Abbey Road, then back down Picardy Road: hill starts and roundabouts.",
+    "features": ["roundabout", "mini-roundabout", "hill", "busy A-road", "residential"],
+    "centre": { "name": "Belvedere Driving Test Centre", "address": "33 Woolwich Road, Belvedere", "postcode": "DA17 5EE", "lat": 51.483581, "lng": 0.142309 },
+    "start": { "lat": 51.483855, "lng": 0.141504, "heading": 263 },
+    "waypoints": [[51.483855,0.141504],[51.483163,0.136373],[51.485056,0.126951],[51.487744,0.114454],[51.486873,0.115154],[51.486993,0.117801],[51.490223,0.129755],[51.490335,0.135378],[51.487688,0.149724],[51.482494,0.146186],[51.4833,0.14361]]
+  }
+]

@@ -1,0 +1,22 @@
+{
+  "name": "l-plate",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.15.0",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "dev": "pnpm -r --parallel --filter ./apps/** run dev",
+    "test": "pnpm -r run test",
+    "typecheck": "pnpm -r run typecheck",
+    "build": "pnpm -r run build",
+    "tunnel": "ngrok http 5173",
+    "build:routes": "node scripts/build-routes.ts",
+    "osm:fetch": "node scripts/osm-fetch.ts",
+    "build:rules": "node scripts/build-rules.ts",
+    "scan-secrets": "node scripts/scan-secrets.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "typescript": "^5.9.2"
+  }
+}

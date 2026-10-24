@@ -1,0 +1,6 @@
+[
+  { "id": "the-mall", "name": "The Mall", "area": "St James's", "lat": 51.5052, "lng": -0.1322, "heading": 235, "note": "Wide, straight and tree-lined. A gentle first drive towards Buckingham Palace." },
+  { "id": "westminster-bridge", "name": "Westminster Bridge", "area": "Westminster", "lat": 51.5008, "lng": -0.1219, "heading": 265, "note": "Over the Thames towards Big Ben and Parliament Square." },
+  { "id": "tower-bridge", "name": "Tower Bridge", "area": "Southwark", "lat": 51.5055, "lng": -0.0754, "heading": 355, "note": "North across Tower Bridge towards the Tower of London." },
+  { "id": "holland-park", "name": "Holland Park Avenue", "area": "Notting Hill", "lat": 51.5075, "lng": -0.2040, "heading": 80, "note": "A busy, straight A-road with side roads on both sides." }
+]
