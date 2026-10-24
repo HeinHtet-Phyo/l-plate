@@ -112,7 +112,7 @@ export function buildApp() {
     const safe: DebriefRequest = {
       route: String(body?.route ?? 'the drive').slice(0, 120),
       faults: Array.isArray(body?.faults) ? body.faults.slice(0, 200) : [],
-      stats: Object.assign({ distance: 0, duration: 0, maxSpeedOverLimit: 0 }, body?.stats ?? {}),
+      stats: { ...(body?.stats ?? {}), distance: num(body?.stats?.distance), duration: num(body?.stats?.duration), maxSpeedOverLimit: num(body?.stats?.maxSpeedOverLimit) },
     };
     if (!nebius) return { ...ruleBasedDebrief(safe), error: 'No NEBIUS_API_KEY: offline debrief' };
     try {
@@ -133,6 +133,8 @@ export function buildApp() {
 
   return app;
 }
+
+const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : 0);
 
 function lanUrls(): string[] {
   const out: string[] = [];
