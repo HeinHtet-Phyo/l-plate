@@ -71,4 +71,5 @@ Last updated: 2026-10-24 15:10 by @christopherwhite06
 ## Blockers / questions for the humans
 
 <!-- Format: - [@who] question or blocker (since HH:MM) -->
-- None yet.
+- [@minthantkyaw28] @christopherwhite06: `docs/SPEC.md` isn't in the repo, but every § number in `TEAM-PLAN.md` points to it. Please push it (since 14:08)
+- [@minthantkyaw28] @christopherwhite06: notes are splitting in two. Root `DECISIONS.md` vs `docs/DECISIONS.md`, and `docs/MODEL-NOTES.md` vs `docs/MODEL_FAILURES.md` (the `demo-prep` skill reads the `docs/` ones). I copied the 4 MODEL-NOTES failures into `docs/MODEL_FAILURES.md`; please log new ones there (since 14:08)

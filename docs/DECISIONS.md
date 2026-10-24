@@ -57,3 +57,14 @@
 - **Alternatives:** keep `.claude/` canonical and rely on Cursor's `.claude/skills` compatibility (Codex, Gemini and Copilot don't read it, and workflows would stay Claude-only); copy files per tool (they drift).
 - **Affects:** everyone. Edit skills only in `.agents/skills/`, and add the Claude symlink for new ones (AGENTS.md §6).
 
+## 2026-10-24 14:10: City renderer lighting contract and shared-uniform conventions (@minthantkyaw28)
+- **Decision:**
+  - `render/atmosphere/uniforms.ts` is committed on `feat/city` byte-for-byte as the stub in `TEAM-PLAN.md`, so Aryaan's copy merges cleanly.
+  - Lamp map convention: `uv = xz · uLampScale.x + uLampScale.y`, with `x = 1/(n·cell)` and `y = radius/(n·cell)`. Data row = z, column = x (single channel, `unpackAlignment = 1`).
+  - The city sets the shared uniforms each frame from `s.conditions` (`uDay`, `uOvercast`, `uRain`, sky colour), the clock and the learner's car (headlights). If `uLampMap` is still null, it uploads `s.lightMap` itself. The app calls `city.update` before `atmosphere.update`, so the real atmosphere overrides all of these once it lands.
+  - City surfaces light themselves with the spec's formula (`0.1 + 0.9·day·(1 − 0.35·overcast)` + lamps + headlights) in `render/city/common.ts`. Buildings and props use Lambert materials lit by the atmosphere's hemisphere and sun lights, with streetlights and headlights added as emissive.
+  - Traffic-light aspects are drawn from `s.world.time`, the clock the red-light fault uses.
+- **Why:** each render section can be built and merged on its own, and the city looks right at night and in rain even with the fallback atmosphere.
+- **Alternatives:** wait for Aryaan's atmosphere (blocks the city); put real THREE lights at 3,000 lamps (far too slow).
+- **Affects:** @Aryaan2303 (atmosphere: please use the same lamp map uv convention), @christopherwhite06 (integration). Note that Chris's build decisions are in the root `DECISIONS.md`.
+
