@@ -48,3 +48,13 @@
   capacity can dip mid-demo.
 - **Demo-worthy:** yes. It's a real reliability edge of shared hosting, and the backoff plus fallback is easy to show.
 
+
+## 2026-10-24 14:30: all models (incl. deepseek-ai/DeepSeek-V4.1-Flash-1017): HTTP 503 from Token Factory's nginx (@HeinHtet-Phyo)
+- **Task:** `/api/instructor` (Sam, max_tokens 120) and `/api/debrief` (strict json_schema, max_tokens 900) after switching both to DeepSeek V4.1 Flash 1017.
+- **Expected:** a one-sentence spoken reply, and a JSON debrief.
+- **Got:** `503 Service Temporarily Unavailable` (an nginx HTML page) in about 60 ms, for DeepSeek V4.1 Flash, V4.1 Flash 1017 and Qwen3-30B alike. The server's 3 retries with backoff didn't help: `/api/instructor` returned 502, and `/api/debrief` fell back to the offline report.
+- **How often:** 9/9 direct calls across 3 models in one minute. Earlier, 2 of about 6 calls returned 503 and the immediate retry worked.
+- **Cost:** about 3.7 s per server request, spent on retries.
+- **Workaround:** none for the outage. The debrief's offline fallback kept the game working. Also, with no `reasoning_effort`, DeepSeek V4.1 Flash spent all of `max_tokens: 80` thinking and returned `content: null`, so the server now sends `NEBIUS_REASONING_EFFORT=none`.
+- **Demo-worthy:** yes. Shared serverless capacity can disappear mid-demo, so show the offline fallback.
+

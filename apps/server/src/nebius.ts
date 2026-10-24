@@ -17,6 +17,8 @@ export interface NebiusClientOptions {
   timeoutMs?: number;
   retries?: number;
   backoffMs?: number;
+  /** Sent as `reasoning_effort` on every chat call that doesn't set one ('none' stops reasoning models thinking). */
+  reasoningEffort?: string;
 }
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -60,6 +62,7 @@ export function createNebius(opts: NebiusClientOptions) {
 
   return {
     chat(body: Record<string, unknown>) {
+      if (opts.reasoningEffort && !('reasoning_effort' in body)) body = { ...body, reasoning_effort: opts.reasoningEffort };
       return post<{ choices: { message: { content: string | null; reasoning_content?: string } }[]; usage?: unknown }>(
         '/chat/completions',
         body,

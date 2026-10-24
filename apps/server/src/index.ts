@@ -19,7 +19,7 @@ export function buildApp() {
   const app = Fastify({ logger: { level: process.env.LOG_LEVEL ?? 'info' } });
   const relay = new Relay();
   const limiter = new RateLimiter(1000);
-  const nebius = KEY ? createNebius({ apiKey: KEY }) : null;
+  const nebius = KEY ? createNebius({ apiKey: KEY, reasoningEffort: process.env.NEBIUS_REASONING_EFFORT || undefined }) : null;
 
   app.register(websocket);
 
