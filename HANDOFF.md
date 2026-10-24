@@ -29,12 +29,12 @@ Last updated: 2026-10-24 15:10 by @christopherwhite06
 ## Lanes
 
 ### @minthantkyaw28
-- **Status:** in progress
-- **Working on:** TEAM-PLAN §2, the city renderer: `createCity(s, tex)` in `apps/web/src/render/city/**` (road surface shader, markings, buildings, trees, parked cars, streetlights, traffic lights, Belisha beacons) + `render/textures.ts`
-- **Next:** PR `feat/city` into main for Chris to merge; Goodmayes should look like a London street
+- **Status:** in progress (Claude Code hit its usage limit at ~14:45; any tool can resume)
+- **Working on:** TEAM-PLAN §2 city renderer on branch `feat/city`. **Resume from `apps/web/src/render/city/README.md`** (status table, run/preview/screenshot steps). A background job pushes `wip(city): auto-checkpoint` commits every 8 min.
+- **Next:** `git switch feat/city && git pull`; finish the parts marked in progress in that README (surface night/rain tuning, markings, buildings, props (may be a placeholder), signals); typecheck; check `/?route=goodmayes`; open PR `feat/city` → main for Chris
 - **Branch:** feat/city
-- **Updated:** 2026-10-24 13:58
-- **Log:** `docs/sessions/2026-10-24-1133-minthantkyaw28-agent-memory-system.md`
+- **Updated:** 2026-10-24 14:45
+- **Log:** `apps/web/src/render/city/README.md`
 
 ### @christopherwhite06
 - **Status:** in progress. App shell done and pushed: menu, drive screen (two-pass render loop, adaptive dpr), HUD, lesson summary with Nebius debrief, phone QR panel. `?route=goodmayes` drives end to end at 60 fps with fallback visuals; your render modules replace the fallbacks automatically when merged (`apps/web/src/app/parts.ts`).
