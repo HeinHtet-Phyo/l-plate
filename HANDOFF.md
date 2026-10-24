@@ -4,12 +4,12 @@
 > **Edit only your own lane.** In the shared sections, change single lines; don't reorder or rewrite.
 > Keep this file under ~150 lines. Details belong in `docs/sessions/`.
 
-Last updated: 2026-10-24 15:10 by @christopherwhite06
+Last updated: 2026-10-24 14:23 by @minthantkyaw28
 
 ## Snapshot
 
 - **Idea:** L-Plate, a driving-practice game on real UK streets with an AI instructor. See `docs/PROJECT.md`.
-- **Works end-to-end:** nothing yet (no app code).
+- **Works end-to-end:** Goodmayes drives in the full app with the city, cabin, mirrors, phone controls, live instructor and AI debrief; city PR #1 awaits merge.
 - **Repo has:** the shared agent memory system (AGENTS.md, this board, `docs/`, workflow skills, session-start hook), tool-neutral
   in `.agents/` with adapters for Claude Code (`.claude/`) and Cursor (`.cursor/`), plus Token Factory, Nebius and Tavily skills.
 - **Keys verified live (2026-10-24):** Token Factory (29 serverless models, chat/tools/JSON/vision/embeddings OK, no image
@@ -29,12 +29,12 @@ Last updated: 2026-10-24 15:10 by @christopherwhite06
 ## Lanes
 
 ### @minthantkyaw28
-- **Status:** in progress (Claude Code hit its usage limit at ~14:45; any tool can resume)
-- **Working on:** TEAM-PLAN §2 city renderer on branch `feat/city`. **Resume from `apps/web/src/render/city/README.md`** (status table, run/preview/screenshot steps). A background job pushes `wip(city): auto-checkpoint` commits every 8 min.
-- **Next:** `git switch feat/city && git pull`; finish the parts marked in progress in that README (surface night/rain tuning, markings, buildings, props (may be a placeholder), signals); typecheck; check `/?route=goodmayes`; open PR `feat/city` → main for Chris
+- **Status:** done; **merged into `main`** by @christopherwhite06.
+- **Working on:** nothing
+- **Next:** @christopherwhite06 merges https://github.com/christopherwhite06/Nebius-Hack/pull/1, then run the final merged-device performance/demo pass.
 - **Branch:** feat/city
-- **Updated:** 2026-10-24 14:45
-- **Log:** `apps/web/src/render/city/README.md`
+- **Updated:** 2026-10-24 14:23
+- **Log:** `docs/sessions/2026-10-24-1420-minthantkyaw28-finish-city-renderer.md`
 
 ### @christopherwhite06
 - **Status:** in progress. App shell done and pushed: menu, drive screen (two-pass render loop, adaptive dpr), HUD, lesson summary with Nebius debrief, phone QR panel. `?route=goodmayes` drives end to end at 60 fps with fallback visuals; your render modules replace the fallbacks automatically when merged (`apps/web/src/app/parts.ts`).
