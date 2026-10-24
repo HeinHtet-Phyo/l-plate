@@ -1,19 +1,18 @@
 // App shell: menu ↔ drive, URL shortcuts (?route=, ?start=, &weather=, &voice=0, &mirrors=0, &map=0).
 import { useEffect, useMemo, useState } from 'react';
-import type { AppConfig, TestRoute } from '@lplate/shared';
+import type { AppConfig } from '@lplate/shared';
 import { HostLink } from '../net/pairing.ts';
 import { detectGpu } from '../sim/gpu.ts';
 import { PRESETS, type PresetId } from '../sim/conditions.ts';
 import { Drive } from './Drive.tsx';
 import { PhonePanel } from './PhonePanel.tsx';
 import { KEYS } from './Hud.tsx';
-import routesJson from '../routes/test-routes.json';
 import startsJson from '../routes/free-starts.json';
 import './app.css';
 
-const ROUTES = routesJson as unknown as TestRoute[];
 const STARTS = startsJson as { id: string; name: string; area: string; note: string }[];
-const READY = new Set(['goodmayes', 'mill-hill', 'isleworth', 'morden', 'the-mall', 'westminster-bridge', 'tower-bridge', 'holland-park']);
+const SPLAT_ID = 'elephant-splat';
+const SPLAT = STARTS.find((s) => s.id === SPLAT_ID);
 
 type Pick = { kind: 'route' | 'free'; id: string };
 
@@ -45,7 +44,7 @@ export default function App() {
   const gpu = useMemo(detectGpu, []);
   const host = useMemo(() => new HostLink(), []);
   const [cfg, setCfg] = useState<AppConfig | null>(null);
-  const [pick, setPick] = useState<Pick>(url.pick ?? { kind: 'route', id: 'goodmayes' });
+  const [pick] = useState<Pick>(url.pick ?? { kind: 'free', id: SPLAT_ID });
   const [weather, setWeather] = useState<'live' | PresetId>(url.weather);
   const [instructor, setInstructor] = useState(() => getStored('lplate.instructor', true));
   const [driving, setDriving] = useState(url.pick != null);
@@ -93,67 +92,44 @@ export default function App() {
 
   return (
     <div className="menu">
-      <header>
+      <header className="hero">
         <h1>
           <span className="lplate">L</span> L-Plate
         </h1>
-        <p className="pitch">Practise for your driving test on real London streets, with Sam, an AI instructor running on Nebius Token Factory.</p>
+        <p className="purpose">
+          Learner drivers only get a few hours behind the wheel before their test, and every lesson costs money. L-Plate lets you
+          practise on a real London street, rebuilt in 3D from real photos, with Sam, an AI driving instructor who gives directions,
+          coaches you live and marks your drive like a driving examiner.
+        </p>
+        <ul className="why">
+          <li><b>Real streets</b> · Gaussian splat built from 112 street photos</li>
+          <li><b>Real feedback</b> · minor, serious and dangerous faults with the Highway Code rule</li>
+          <li><b>Open models</b> · instructor and debrief run on Nebius Token Factory</li>
+        </ul>
       </header>
 
-      <section>
-        <h2>Driving test routes</h2>
-        <p className="muted">Typical routes from real DVSA test centres, not official. DVSA doesn't publish test routes.</p>
-        <div className="cards">
-          {ROUTES.map((r) => (
-            <button
-              key={r.id}
-              className={`card ${pick.kind === 'route' && pick.id === r.id ? 'selected' : ''}`}
-              disabled={!READY.has(r.id)}
-              onClick={() => setPick({ kind: 'route', id: r.id })}
-            >
-              <div className="card-title">{r.centre.name}</div>
-              <div className="card-sub">{r.name}</div>
-              <div className="card-meta">
-                {(r.distance / 1609.344).toFixed(1)} miles · {Math.round((r.duration * 1.6) / 60)} min
-              </div>
-              <div className="chips">
-                {r.features.slice(0, 4).map((f) => (
-                  <span key={f} className="chip">
-                    {f}
-                  </span>
-                ))}
-              </div>
-              {!READY.has(r.id) && <div className="muted small">Map data still loading</div>}
-            </button>
-          ))}
+      <section className="map-pick">
+        <div className="card selected hero-card">
+          <div className="card-kicker">Gaussian-splat map</div>
+          <div className="card-title">{SPLAT?.name.replace(' (splat)', '') ?? 'Elephant & Castle'}</div>
+          <div className="card-sub">{SPLAT?.area ?? 'Southwark'}, London · 320 m of real street, photo-real</div>
+          <div className="muted small">Street imagery © RedAuburn via Panoramax, CC BY-SA 4.0</div>
         </div>
-      </section>
-
-      <section>
-        <h2>Free drive</h2>
-        <div className="cards">
-          {STARTS.map((s) => (
-            <button key={s.id} className={`card ${pick.kind === 'free' && pick.id === s.id ? 'selected' : ''}`} onClick={() => setPick({ kind: 'free', id: s.id })}>
-              <div className="card-title">{s.name}</div>
-              <div className="card-sub">{s.area}</div>
-              <div className="muted small">{s.note}</div>
-            </button>
-          ))}
+        <div className="panel start">
+          <button
+            className="primary big"
+            onClick={() => {
+              setUrl(pick);
+              setDriving(true);
+            }}
+          >
+            Start driving
+          </button>
+          <p className="muted small">Space releases the handbrake, W to drive</p>
         </div>
       </section>
 
       <section className="row3">
-        <div className="panel">
-          <h3>Conditions</h3>
-          <select value={weather} onChange={(e) => setWeather(e.target.value as 'live' | PresetId)}>
-            <option value="live">Live London weather and time</option>
-            {Object.entries(PRESETS).map(([id, p]) => (
-              <option key={id} value={id}>
-                {p.description} (preset)
-              </option>
-            ))}
-          </select>
-        </div>
         <div className="panel">
           <h3>AI instructor</h3>
           <label className="toggle">
@@ -172,23 +148,18 @@ export default function App() {
             Sam speaks directions and feedback
           </label>
           <p className="muted small">
-            {cfg == null ? 'Checking the server…' : cfg.instructor ? 'AI instructor on Nebius Token Factory.' : 'Sam is unavailable: the server has no NEBIUS_API_KEY (or is down). Everything else works.'}
+            {cfg == null ? 'Checking the server…' : cfg.instructor ? 'Running on Nebius Token Factory.' : 'Sam is unavailable: the server has no NEBIUS_API_KEY (or is down).'}
           </p>
+          <h3 className="gap">Conditions</h3>
+          <select value={weather} onChange={(e) => setWeather(e.target.value as 'live' | PresetId)}>
+            <option value="live">Live London weather and time</option>
+            {Object.entries(PRESETS).map(([id, p]) => (
+              <option key={id} value={id}>
+                {p.description}
+              </option>
+            ))}
+          </select>
         </div>
-        <div className="panel">
-          <h3>Graphics</h3>
-          <p>{gpu.name}</p>
-          {gpu.software ? (
-            <p className="warn small">
-              Software rendering detected. Turn on hardware acceleration: Chrome/Edge Settings → System → "Use graphics acceleration when available", or chrome://flags/#ignore-gpu-blocklist.
-            </p>
-          ) : (
-            <p className="muted small">Hardware accelerated{gpu.webgl2 ? ', WebGL 2' : ''}.</p>
-          )}
-        </div>
-      </section>
-
-      <section className="row3">
         <div className="panel">
           <PhonePanel host={host} />
         </div>
@@ -206,25 +177,12 @@ export default function App() {
               ))}
             </tbody>
           </table>
-        </div>
-        <div className="panel start">
-          <button
-            className="primary big"
-            onClick={() => {
-              setUrl(pick);
-              setDriving(true);
-            }}
-          >
-            Start driving
-          </button>
-          <p className="muted small">
-            {pick.kind === 'route' ? ROUTES.find((r) => r.id === pick.id)?.centre.name : STARTS.find((s) => s.id === pick.id)?.name}
-          </p>
+          {gpu.software && <p className="warn small">Software rendering detected: turn on hardware acceleration in your browser settings.</p>}
         </div>
       </section>
 
       <footer className="muted small">
-        Map data © OpenStreetMap contributors (ODbL) · routes from OSRM · test centre details from GOV.UK · weather by Open-Meteo (CC BY 4.0) · AI instructor on Nebius Token Factory
+        Street imagery © RedAuburn via Panoramax (CC BY-SA 4.0) · map data © OpenStreetMap contributors (ODbL) · weather by Open-Meteo (CC BY 4.0) · AI on Nebius Token Factory
       </footer>
     </div>
   );

@@ -108,3 +108,15 @@ kbd { background: #252c37; border: 1px solid var(--line); border-radius: 4px; pa
 
 .gear { font-weight: 800; padding: 1px 7px; border-radius: 5px; background: #2a3240; }
 .gear.rev { background: #f2f2f2; color: #111; }
+
+/* Lobby: purpose up top, one splat map */
+.hero .purpose { font-size: 1.12rem; line-height: 1.55; max-width: 820px; margin: 12px 0 0; }
+.hero .why { list-style: none; padding: 0; margin: 16px 0 0; display: flex; flex-wrap: wrap; gap: 8px 20px; color: var(--muted); font-size: 0.92rem; }
+.hero .why b { color: var(--text); }
+.map-pick { display: grid; grid-template-columns: minmax(0, 2fr) minmax(220px, 1fr); gap: 12px; }
+.hero-card { padding: 22px; cursor: default; background: linear-gradient(135deg, #1b2230, #161b23); }
+.hero-card .card-title { font-size: 1.5rem; }
+.card-kicker { color: var(--accent); font-size: 0.78rem; font-weight: 650; text-transform: uppercase; letter-spacing: 0.06em; }
+.menu h3.gap { margin-top: 16px; }
+.menu footer { margin-top: 32px; }
+@media (max-width: 700px) { .map-pick { grid-template-columns: 1fr; } }
