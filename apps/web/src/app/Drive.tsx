@@ -164,7 +164,12 @@ function DriveScene({ session, texOverrides, mirrors, dpr, setDpr, maxDpr }: { s
     };
   }, [session, gl]);
   const adaptive = useMemo(() => new AdaptiveDpr(dpr, maxDpr), []);
-  const fx = useMemo(() => (QUERY.get('fx') === '0' ? null : createPostFx(gl, scene, camera as THREE.PerspectiveCamera)), [gl, scene, camera]);
+  // No post effects on splat starts: through the half-float bloom chain the splat blacked out the whole
+  // windscreen view on a real GPU (the mirrors, rendered directly, were fine).
+  const fx = useMemo(
+    () => (QUERY.get('fx') === '0' || wantsSplat(session) ? null : createPostFx(gl, scene, camera as THREE.PerspectiveCamera)),
+    [gl, scene, camera, session],
+  );
   // Google 3D Tiles are on for Goodmayes (the demo route) to keep Map Tiles costs down; ?tiles=1 forces them elsewhere.
   // A Gaussian-splat start is the whole map, so no Google tiles there.
   const tilesWanted = !wantsSplat(session) && (QUERY.get('tiles') === '1' || (QUERY.get('tiles') !== '0' && session.setup.id === 'goodmayes'));
