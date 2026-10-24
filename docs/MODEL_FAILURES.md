@@ -48,3 +48,35 @@
   capacity can dip mid-demo.
 - **Demo-worthy:** yes. It's a real reliability edge of shared hosting, and the backoff plus fallback is easy to show.
 
+## 2026-10-24 14:00: Qwen/Qwen3-235B-A22B-Instruct-2507: debrief summary contradicts its own pass/fail (@christopherwhite06)
+- **Task:** examiner debrief JSON for a drive with a kerb strike and a missed signal (`apps/server/src/instructor.ts`, `/api/debrief`).
+- **Expected:** a summary consistent with `result`. Both faults were driving (minor) faults, so "pass" is correct under the DVSA rule.
+- **Got:** summary said "two faults that led to a fail" while `result` was "pass".
+- **How often:** observed while building
+- **Workaround:** the server recomputes the result from the severities with the DVSA rule and appends a correcting sentence when the model disagrees; `modelResult` is kept for the UI.
+- **Demo-worthy:** yes. Logged by @christopherwhite06 in `docs/MODEL-NOTES.md`; copied here by @minthantkyaw28 so the demo-prep skill finds it.
+
+## 2026-10-24 14:00: Qwen/Qwen3-235B-A22B-Instruct-2507: invents Highway Code rule numbers (@christopherwhite06)
+- **Task:** examiner debrief with no rules supplied in the prompt.
+- **Expected:** advice without rule citations, or only rules given in the input.
+- **Got:** cited "Highway Code Rule 153" for kerb strikes (Rule 153 is about traffic-calming measures).
+- **How often:** observed while building
+- **Workaround:** the prompt forbids citing rules not quoted in the input; the server strips "(Rule N)" citations that weren't retrieved; the Highway Code RAG lookup supplies real rules.
+- **Demo-worthy:** yes. Logged by @christopherwhite06 in `docs/MODEL-NOTES.md`; copied here by @minthantkyaw28 so the demo-prep skill finds it.
+
+## 2026-10-24 14:00: Qwen/Qwen3-30B-A3B-Instruct-2507: instructor invents a direction (@christopherwhite06)
+- **Task:** live instructor reply to the same [SIM] input sent twice (`/api/instructor`).
+- **Expected:** directions only from the [SIM] note.
+- **Got:** the second reply said "you're at the end of the road", which wasn't in the [SIM] note.
+- **How often:** 1/2
+- **Workaround:** temperature 0.5 → 0.3; the system prompt says "never invent directions"; the drawn sat nav stays the source of truth.
+- **Demo-worthy:** yes. Logged by @christopherwhite06 in `docs/MODEL-NOTES.md`; copied here by @minthantkyaw28 so the demo-prep skill finds it.
+
+## 2026-10-24 14:00: Qwen/Qwen3-30B-A3B-Instruct-2507: latency check, not a failure (@christopherwhite06)
+- **Task:** full instructor reply, non-streaming.
+- **Expected:** first token under the 1.5 s target.
+- **Got:** 0.4–0.5 s for a full reply.
+- **How often:** typical
+- **Workaround:** none needed; replies aren't streamed.
+- **Demo-worthy:** maybe (shows the fast open model is good enough live). Logged by @christopherwhite06 in `docs/MODEL-NOTES.md`; copied here by @minthantkyaw28 so the demo-prep skill finds it.
+
