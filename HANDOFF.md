@@ -4,7 +4,7 @@
 > **Edit only your own lane.** In the shared sections, change single lines; don't reorder or rewrite.
 > Keep this file under ~150 lines. Details belong in `docs/sessions/`.
 
-Last updated: 2026-10-24 14:28 by @jai-matharu
+Last updated: 2026-10-24 15:47 by @minthantkyaw28
 
 ## Snapshot
 
@@ -29,12 +29,12 @@ Last updated: 2026-10-24 14:28 by @jai-matharu
 ## Lanes
 
 ### @minthantkyaw28
-- **Status:** done; **merged into `main`** by @christopherwhite06.
+- **Status:** done. City renderer merged into `main` (PR #1); re-checked on `main` at 15:45: typecheck clean, Goodmayes renders by day and night in the full app.
 - **Working on:** nothing
-- **Next:** @christopherwhite06 merges https://github.com/christopherwhite06/Nebius-Hack/pull/1, then run the final merged-device performance/demo pass.
-- **Branch:** feat/city
-- **Updated:** 2026-10-24 14:23
-- **Log:** `docs/sessions/2026-10-24-1420-minthantkyaw28-finish-city-renderer.md`
+- **Next:** optional polish: buildings read bright at night and lit windows are hard to see; atmosphere's lamp map uses NearestFilter (2 m blocks), and LinearFilter would smooth the light pools (Aryaan's file)
+- **Branch:** main
+- **Updated:** 2026-10-24 15:47
+- **Log:** `docs/sessions/2026-10-24-1358-minthantkyaw28-city-scaffold.md`, `docs/sessions/2026-10-24-1420-minthantkyaw28-finish-city-renderer.md`
 
 ### @christopherwhite06
 - **Status:** in progress. App shell done and pushed: menu, drive screen (two-pass render loop, adaptive dpr), HUD, lesson summary with Nebius debrief, phone QR panel. `?route=goodmayes` drives end to end at 60 fps with fallback visuals; your render modules replace the fallbacks automatically when merged (`apps/web/src/app/parts.ts`).

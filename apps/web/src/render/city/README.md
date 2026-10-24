@@ -1,6 +1,6 @@
 # City renderer: status and how to resume
 
-> **Owner:** @minthantkyaw28 (TEAM-PLAN §2). **Branch:** `feat/city`. **Goal for 16:30:** Goodmayes looks like a London
+> **Owner:** @minthantkyaw28 (TEAM-PLAN §2). **Merged into `main` (PR #1).** **Goal for 16:30:** Goodmayes looks like a London
 > street from the driver's seat (`/?route=goodmayes`), by day, at night and in rain, without hurting the frame rate.
 > **This file is the live checklist.** Any agent (Claude Code, Codex, Cursor…) can carry on from it. Update the
 > status table when a part changes, then commit and push `feat/city`.
@@ -44,7 +44,7 @@ Updated: 2026-10-24 15:24 by @minthantkyaw28.
 | props | done | instanced trees, distance-culled parked cars and 3,097 streetlights with night glow |
 | signals | done | UK three-aspect heads follow `s.signals.aspect()`; Belisha beacons flash |
 | integration check in the full app | done | `?route=goodmayes&weather=sunny&voice=0` renders city, cabin and mirrors; city-only Goodmayes is 59–60 calls, 486k triangles, 50–61 FPS on Apple M2 (sunny and night-rain) |
-| PR to main | next | commit and push `feat/city`, then open `feat/city` → `main` for @christopherwhite06 |
+| PR to main | done | PR #1 merged by @christopherwhite06; re-checked on `main` at 15:45 (typecheck clean, Goodmayes by day and night in the full app with Aryaan's atmosphere and Hein's cabin) |
 
 ## Budgets
 
