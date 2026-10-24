@@ -6,10 +6,13 @@
   "engines": { "node": ">=22" },
   "scripts": {
     "dev": "pnpm -r --parallel --filter ./apps/** run dev",
+    "dev:phone": "HTTPS=1 pnpm -r --parallel --filter ./apps/** run dev",
     "test": "pnpm -r run test",
     "typecheck": "pnpm -r run typecheck",
     "build": "pnpm -r run build",
     "tunnel": "ngrok http 5173",
+    "tunnel:lhr": "ssh -R 80:localhost:5173 nokey@localhost.run",
+    "tunnel:cf": "cloudflared tunnel --url http://localhost:5173 --metrics 127.0.0.1:45678",
     "build:routes": "node scripts/build-routes.ts",
     "osm:fetch": "node scripts/osm-fetch.ts",
     "build:rules": "node scripts/build-rules.ts",

@@ -173,23 +173,44 @@ function debriefInput(body: DebriefRequest | undefined): DebriefRequest {
   };
 }
 
+/**
+ * Phone links on this network. Private IPv4 first; then global IPv6, because on IPv6-only Wi-Fi
+ * macOS shows a CLAT address (192.0.0.x) that only exists inside the laptop and a phone can't reach.
+ */
 function lanUrls(): string[] {
-  const out: string[] = [];
+  const proto = process.env.HTTPS === '1' ? 'https' : 'http';
+  const port = process.env.WEB_PORT ?? 5173;
+  const v4: string[] = [];
+  const v6: string[] = [];
   for (const list of Object.values(networkInterfaces())) {
-    for (const i of list ?? []) if (i.family === 'IPv4' && !i.internal) out.push(`http://${i.address}:${process.env.WEB_PORT ?? 5173}`);
+    for (const i of list ?? []) {
+      if (i.internal) continue;
+      if (i.family === 'IPv4' && !i.address.startsWith('192.0.0.')) v4.push(`${proto}://${i.address}:${port}`);
+      else if (i.family === 'IPv6' && /^[23]/.test(i.address)) v6.push(`${proto}://[${i.address}]:${port}`);
+    }
   }
-  return out;
+  return [...v4, ...v6];
 }
 
 async function publicUrl(): Promise<string | null> {
   if (process.env.PUBLIC_URL) return process.env.PUBLIC_URL.replace(/\/$/, '');
+  // An ngrok tunnel (pnpm tunnel), else a Cloudflare quick tunnel (pnpm tunnel:cf): both give the phone HTTPS.
   try {
     const r = await fetch('http://127.0.0.1:4040/api/tunnels', { signal: AbortSignal.timeout(800) });
     const j = (await r.json()) as { tunnels: { public_url: string }[] };
-    return j.tunnels.find((t) => t.public_url.startsWith('https://'))?.public_url ?? null;
+    const url = j.tunnels.find((t) => t.public_url.startsWith('https://'))?.public_url;
+    if (url) return url;
   } catch {
-    return null;
+    /* no ngrok */
   }
+  try {
+    const r = await fetch(`http://127.0.0.1:${process.env.CLOUDFLARED_METRICS_PORT ?? 45678}/quicktunnel`, { signal: AbortSignal.timeout(800) });
+    const j = (await r.json()) as { hostname?: string };
+    if (j.hostname) return `https://${j.hostname}`;
+  } catch {
+    /* no cloudflared */
+  }
+  return null;
 }
 
 if (process.argv[1] && import.meta.url.endsWith(process.argv[1].split('/').pop()!)) {

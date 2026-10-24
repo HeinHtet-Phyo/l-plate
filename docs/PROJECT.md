@@ -60,6 +60,7 @@ Build order (the priority list):
   - `apps/web/public/osm/`: cached OSM extracts; `apps/web/src/routes/`: test routes and free-drive starts
   - `apps/server/src/`: relay, instructor, debrief, reroute; `packages/shared/`: message and API types; `scripts/`: data builders
 - **Run locally:** `corepack enable && pnpm install`, then `pnpm --filter @lplate/server dev` (port 8080, `PORT=` to change) and `pnpm --filter @lplate/web dev` (port 5173; `SERVER_PORT=` if the server isn't on 8080). Open `http://localhost:5173/?route=goodmayes`. City-only preview (once `feat/city` is merged): `http://localhost:5173/src/render/city/preview/index.html`.
+- **Phone controller (QR code):** run `pnpm dev:phone` instead, which serves HTTPS with a self-signed certificate and is what iOS needs before it shares tilt. Open `https://localhost:5173` and accept the warning once; the phone accepts it once too ("Show details" → "visit this website"). The QR uses a private IPv4 address, or on IPv6-only Wi-Fi the laptop's global IPv6 address. macOS's `192.0.0.x` CLAT address is skipped because phones can't reach it. `PUBLIC_URL`, ngrok (`pnpm tunnel`) and Cloudflare (`pnpm tunnel:cf`) still override it. The venue Wi-Fi blocks trycloudflare, and localhost.run (`pnpm tunnel:lhr`) runs at about 1.5 KB/s, which is too slow for the app.
 - **Test:** `pnpm typecheck`, `pnpm test` (Vitest).
 
 ## Demo plan

@@ -42,3 +42,9 @@ Ran the real server (`PORT=8090`) and web (`SERVER_PORT=8090`). Then Playwright 
 
 Verified: `tsc --noEmit` is clean for all of `apps/web`. I rendered Goodmayes in Chrome through a local harness (uncommitted `src/main.tsx`: placeholder road ribbons and boxes for the world, the TEAM-PLAN render loop order, `?preset=` and `?auto=1`) at sunny, rain and night. All parts were visible and lined up, with no console errors.
 Known limits: the left door mirror sits about 66° left, outside a 100° horizontal FOV (as in a real RHD car, you'd turn your head). The digital mph is partly hidden by the wheel hub.
+
+## Update 15:20: model referee, phone fault buzz and report card, QR fix
+- **Model referee:** `POST /api/referee` (`apps/server/src/referee.ts`) and `apps/web/src/referee/Referee.tsx`. Opens from "Compare examiner models" on the summary, or standalone at `/referee`. A live run had DeepSeek V4.1 Flash, Qwen3-235B and Kimi-K3 all scoring 100 in 0.9 to 3.7 s.
+- **Highway Code lookup** is capped at 4 s and cached, because a slow embeddings call stalled debriefs for 18 s. The referee went from 22 s to 7.8 s.
+- **Phone:** `fault` and `report` host messages. A fault triggers a vibration and banner (long and red for serious ones); the debrief shows a PASS/FAIL report card.
+- **QR not working:** the venue Wi-Fi is IPv6-only, and the QR pointed at `192.0.0.2`, a CLAT address phones can't reach. Vite also listened only on localhost, and steering is now gyro-only, so it needs HTTPS. Fix: `host: true`, IPv6-aware `lanUrls()`, and `pnpm dev:phone` (HTTPS via `@vitejs/plugin-basic-ssl`). Verified with Playwright: the phone page loaded over `https://[ipv6]:5173` in 0.9 s, it was a secure context, and 46 controls arrived in 1.5 s. **Not yet tested on a real iPhone**; venue client isolation could still block it.
