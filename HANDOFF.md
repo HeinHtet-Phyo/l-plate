@@ -53,12 +53,12 @@ Last updated: 2026-10-24 15:10 by @christopherwhite06
 - **Log:** `docs/sessions/2026-10-24-1325-HeinHtet-Phyo-phone-controller.md`
 
 ### @Aryaan2303
-- **Status:** not started
-- **Working on:** nothing
-- **Next:** nothing yet
-- **Branch:** none
-- **Updated:** never
-- **Log:** none
+- **Status:** in progress. `createAtmosphere(s)` (sky dome, sun/moon/hemisphere lights, ACES tone mapping, FogExp2, 7k-streak rain, live Open-Meteo weather refresh every 10 min) and `createTraffic(s)` (instanced bodies/glass/wheels/head-tail lights for up to 130 cars) built in `apps/web/src/render/atmosphere/`, `apps/web/src/render/traffic/`. Also pushed the shared `render/types.ts` contract and `render/atmosphere/uniforms.ts` stub that were missing, so Min's city shaders and the rest of the render loop have something to compile against.
+- **Working on:** verifying a standalone smoke-test render before opening the PR (no app shell/render loop exists yet to test against end to end — that's Chris's TEAM-PLAN §1).
+- **Next:** open PR into main once smoke test passes; then optionally wire `Traffic.applySpeedBands` for live Google traffic (optional per TEAM-PLAN §4).
+- **Branch:** feat/atmosphere-traffic
+- **Updated:** 2026-10-24 14:20
+- **Log:** `docs/sessions/2026-10-24-1420-Aryaan2303-atmosphere-traffic.md`
 
 ### @jai-matharu
 - **Status:** not started
