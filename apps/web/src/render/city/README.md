@@ -33,18 +33,18 @@
 
 ## Status
 
-Updated: 2026-10-24 14:40 by @minthantkyaw28 (Claude Code, with one sub-agent per part).
+Updated: 2026-10-24 15:24 by @minthantkyaw28.
 
 | Part | Status | Notes / remaining |
 |---|---|---|
 | scaffold (`index`, `common`, preview) | done | |
-| surface | built; tuning night/rain | sunny looks right (asphalt, pale kerbs, slab pavements, grass). TODO: smooth the jagged outer pavement edge; reduce the darkening next to buildings; check `preset=night`, `rain`, `night-rain`. ~30 draw calls, ~95k tris, ~50 ms build |
-| markings | in progress | needs: centre dashes, lane lines, stop lines, give-way at minor roads, zebras + zig-zags |
-| buildings | in progress | needs: facade bands with whole bays/storeys, gable roofs on infill terraces, night windows (45%, 85% shops) |
-| props | in progress (may need a restart) | needs: instanced trees, 7,382 parked cars culled to ~350 m, 3,097 streetlights with night glow |
-| signals | in progress | needs: 3-aspect UK heads at `line.head`, lens colours per frame, Belisha beacons flashing |
-| integration check in the full app | not started | drive `?route=goodmayes`, check fps with cabin + mirrors, then night/rain |
-| PR to main | not started | |
+| surface | done | asphalt, slab paving, pale kerbs, ground cover, wet-road Fresnel and shared day/rain/lamp/headlight lighting |
+| markings | done | centre and lane dashes, stop and give-way lines, zebras and zig-zags |
+| buildings | done | facade/storey bands, flat/slate/gable roofs, per-building tint and deterministic night windows |
+| props | done | instanced trees, distance-culled parked cars and 3,097 streetlights with night glow |
+| signals | done | UK three-aspect heads follow `s.signals.aspect()`; Belisha beacons flash |
+| integration check in the full app | done | `?route=goodmayes&weather=sunny&voice=0` renders city, cabin and mirrors; city-only Goodmayes is 59–60 calls, 486k triangles, 50–61 FPS on Apple M2 (sunny and night-rain) |
+| PR to main | next | commit and push `feat/city`, then open `feat/city` → `main` for @christopherwhite06 |
 
 ## Budgets
 

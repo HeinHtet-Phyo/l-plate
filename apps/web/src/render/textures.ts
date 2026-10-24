@@ -137,7 +137,7 @@ interface StyleDef {
 
 const STYLE_DEFS: Record<Style, StyleDef> = {
   'georgian-brick': {
-    wall: (c, w, h, s) => bricks(c, w, h, '#a39270', '#cfc6b2', s),
+    wall: (c, w, h, s) => bricks(c, w, h, '#a3895e', '#bdb3a0', s),
     win: { frame: '#f1efe8', bars: 'sash', w: 0.42, h: 0.58, sill: true },
     ground: 'door',
   },
