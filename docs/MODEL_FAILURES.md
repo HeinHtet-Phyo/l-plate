@@ -98,3 +98,12 @@
 - **How often:** 1/3 test queries; short, jargon-like queries are the weak spot.
 - **Workaround:** set `NEBIUS_MODEL_RERANK` so `/rerank` reorders the cosine top 20, or expand short queries before embedding.
 - **Demo-worthy:** yes. It shows why the examiner may only cite rules that retrieval actually returned.
+
+## 2026-10-24 14:27: Token Factory: HTTP 503 from nginx on every endpoint (@jai-matharu)
+- **Task:** `/v1/embeddings` (`Qwen/Qwen3-Embedding-8B`) for `/api/rules/search`, then `/v1/chat/completions` (`Qwen/Qwen3-30B-A3B-Instruct-2507`) to compare.
+- **Expected:** 200 (both worked minutes earlier: 307 embeddings at 14:20, Sam speaking at 14:11).
+- **Got:** `503 Service Temporarily Unavailable` as an nginx HTML page, on embeddings and chat, 3/3 tries over ~10 s and after the client's 3 backoff retries.
+- **How often:** every call in a ~1 minute window.
+- **Workaround:** the server never depends on Nebius for the drive: rule search failures return `[]`, `/api/debrief` falls back to the
+  rule-based examiner (`source: "offline"`), and `/api/rules/search` now returns a clean 502 instead of the HTML page. Error details are stripped of HTML.
+- **Demo-worthy:** yes. Shared serverless inference can vanish mid-demo; graceful fallback is part of the product.

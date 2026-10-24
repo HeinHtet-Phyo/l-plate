@@ -128,7 +128,12 @@ export function buildApp() {
   app.post('/api/rules/search', async (req, reply) => {
     if (!nebius) return reply.code(503).send({ error: 'No NEBIUS_API_KEY' });
     const q = String((req.body as { query?: string })?.query ?? '').slice(0, 500);
-    return { results: await searchRules(nebius, q, MODEL_RERANK) };
+    try {
+      return { results: await searchRules(nebius, q, MODEL_RERANK) };
+    } catch (e) {
+      req.log.warn({ err: (e as Error).message }, 'rules search failed');
+      return reply.code(502).send({ error: (e as Error).message, results: [] });
+    }
   });
 
   return app;
