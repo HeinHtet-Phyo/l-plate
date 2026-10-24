@@ -1,14 +1,13 @@
 // Gaussian-splat street capture (splat.md): Elephant & Castle trained from Panoramax photos, drawn with Spark.
-// While it's loaded, the city's buildings, trees, parked cars and road surface are hidden; traffic, signals
-// and the cabin stay. If the files are missing we log and keep the normal city.
+// While it's loaded it is the whole map: the OSM city (buildings, road, markings, lamps, signals) and the AI
+// traffic are hidden, and Google 3D Tiles stay off. The cabin, sky and physics stay. If the files are missing
+// we log and keep the normal city.
 import * as THREE from 'three';
 import { SparkRenderer, SplatMesh } from '@sparkjsdev/spark';
 import type { Session } from '../sim/session.ts';
 
 /** Starts that have a splat capture in public/splats/<id>/. */
 const SPLAT_STARTS = new Set(['elephant-splat']);
-/** City pieces that the capture replaces. */
-const HIDE = ['city-buildings', 'tree-trunks', 'tree-canopies', 'parked-bodies', 'parked-trim', 'parked-wheels', 'surface-skirt'];
 
 interface Transform {
   /** Column-major 4×4, COLMAP world → local metres (x east, y up, z south). */
@@ -18,8 +17,8 @@ interface Transform {
 
 export interface Splat {
   object: THREE.Object3D;
-  /** Hides the replaced city pieces once the splat has loaded (call every frame). */
-  update(s: Session, city: THREE.Object3D): void;
+  /** Once the splat has loaded, hides the old map layers it replaces (call every frame). */
+  update(s: Session, replaced: THREE.Object3D[]): void;
   status(): string;
   dispose(): void;
 }
@@ -72,21 +71,10 @@ export function createSplat(s: Session, gl: THREE.WebGLRenderer): Splat {
 
   return {
     object: root,
-    update(sess, city) {
+    update(sess, replaced) {
       if (!loaded) return;
       sess.mapCredit = credit;
-      for (const name of HIDE) {
-        const o = city.getObjectByName(name);
-        if (o) o.visible = false;
-      }
-      // The capture has the real road, so our surface goes too.
-      city.traverse((o) => {
-        const m = (o as THREE.Mesh).material as THREE.ShaderMaterial | undefined;
-        if (m && m.name === 'city-surface') {
-          if (m.uniforms?.uRoadOnly) m.uniforms.uRoadOnly.value = 1;
-          o.visible = false;
-        }
-      });
+      for (const o of replaced) o.visible = false;
     },
     status: () => state,
     dispose() {

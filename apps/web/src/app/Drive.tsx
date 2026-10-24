@@ -166,7 +166,8 @@ function DriveScene({ session, texOverrides, mirrors, dpr, setDpr, maxDpr }: { s
   const adaptive = useMemo(() => new AdaptiveDpr(dpr, maxDpr), []);
   const fx = useMemo(() => (QUERY.get('fx') === '0' ? null : createPostFx(gl, scene, camera as THREE.PerspectiveCamera)), [gl, scene, camera]);
   // Google 3D Tiles are on for Goodmayes (the demo route) to keep Map Tiles costs down; ?tiles=1 forces them elsewhere.
-  const tilesWanted = QUERY.get('tiles') === '1' || (QUERY.get('tiles') !== '0' && session.setup.id === 'goodmayes');
+  // A Gaussian-splat start is the whole map, so no Google tiles there.
+  const tilesWanted = !wantsSplat(session) && (QUERY.get('tiles') === '1' || (QUERY.get('tiles') !== '0' && session.setup.id === 'goodmayes'));
   const tiles = useMemo(() => (GOOGLE_KEY && tilesWanted ? createGoogleTiles(session, GOOGLE_KEY) : null), [session]);
   useEffect(() => {
     fx?.setSize(size.width, size.height);
@@ -182,7 +183,7 @@ function DriveScene({ session, texOverrides, mirrors, dpr, setDpr, maxDpr }: { s
       tiles.dispose();
     };
   }, [tiles]);
-  // Gaussian-splat street capture for starts that have one (splat.ts); replaces buildings, trees, parked cars and road.
+  // Gaussian-splat street capture for starts that have one (splat.ts); once loaded it replaces the OSM city and AI traffic.
   const splat = useMemo(() => (wantsSplat(session) && QUERY.get('splat') !== '0' ? createSplat(session, gl) : null), [session, gl]);
   useEffect(() => {
     if (!splat) return;
@@ -245,7 +246,7 @@ function DriveScene({ session, texOverrides, mirrors, dpr, setDpr, maxDpr }: { s
       session.debugExtra.tiles = tiles.status();
     }
     if (splat) {
-      splat.update(session, parts.city.object);
+      splat.update(session, [parts.city.object, parts.traffic.object]);
       session.debugExtra.splat = splat.status();
     }
     if (fx) fx.update(session, cam);
