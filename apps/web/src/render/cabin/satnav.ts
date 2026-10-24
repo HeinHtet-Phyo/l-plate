@@ -1,5 +1,6 @@
 // Sat nav screen on the dash: a canvas texture redrawn ~10×/s from the session's nav state.
-// Left panel: manoeuvre icon + distance. Right: heading-up route map. Bottom bar: instruction, ETA, miles left.
+// Left panel: manoeuvre icon + distance. Right: heading-up street map (OSM roads, Google-style colours) with the
+// route on top. Bottom bar: instruction, ETA, miles left.
 import * as THREE from 'three';
 import type { RouteStep } from '@lplate/shared';
 import type { Session } from '../../sim/session.ts';
@@ -11,6 +12,60 @@ const BAR = 78;
 /** Map view radius in metres (the car sits at the lower centre, so this is roughly the look-ahead). */
 const VIEW_M = 250;
 const REDRAW = 0.1;
+
+/** Road styles by OSM class, drawn bottom to top: [min width px, casing colour, fill colour]. */
+type RoadClass = 'minor' | 'local' | 'major' | 'main';
+const ROAD_STYLE: Record<RoadClass, [number, string, string]> = {
+  minor: [3, '#d3d6da', '#ffffff'],
+  local: [5, '#c4c7cc', '#ffffff'],
+  major: [7, '#e0b44a', '#fde293'],
+  main: [9, '#e19a2a', '#f8c96b'],
+};
+const ORDER: RoadClass[] = ['minor', 'local', 'major', 'main'];
+
+function roadClass(highway: string): RoadClass {
+  if (/^(motorway|trunk)/.test(highway)) return 'main';
+  if (/^(primary|secondary)/.test(highway)) return 'major';
+  if (/^(tertiary|residential|unclassified|living_street)/.test(highway)) return 'local';
+  return 'minor';
+}
+
+interface MapSeg {
+  ax: number;
+  az: number;
+  bx: number;
+  bz: number;
+  mx: number;
+  mz: number;
+  half: number;
+  width: number;
+  cls: RoadClass;
+  name: string;
+}
+
+/** The road network flattened once per session, so each redraw is a cheap bounding-box filter. */
+const segCache = new WeakMap<Session, MapSeg[]>();
+function mapSegs(s: Session): MapSeg[] {
+  const hit = segCache.get(s);
+  if (hit) return hit;
+  const out: MapSeg[] = [];
+  for (const g of s.net?.segs ?? []) {
+    out.push({
+      ax: g.ax,
+      az: g.az,
+      bx: g.bx,
+      bz: g.bz,
+      mx: (g.ax + g.bx) / 2,
+      mz: (g.az + g.bz) / 2,
+      half: g.len / 2,
+      width: g.halfLeft + g.halfRight,
+      cls: roadClass(g.road.highway),
+      name: g.road.name,
+    });
+  }
+  if (out.length) segCache.set(s, out);
+  return out;
+}
 const FONT = 'system-ui, -apple-system, "Segoe UI", sans-serif';
 
 const C = {
@@ -20,10 +75,11 @@ const C = {
   bar: '#0a0f16',
   text: '#f2f5f8',
   dim: '#9aa8b8',
-  map: '#1b2633',
-  route: '#3d8bff',
-  done: '#6b7480',
-  car: '#ffffff',
+  map: '#e8eaed',
+  route: '#1a73e8',
+  routeCase: '#1558b0',
+  done: '#9aa0a6',
+  car: '#1a73e8',
   icon: '#ffffff',
 };
 
@@ -159,6 +215,9 @@ function drawMap(ctx: CanvasRenderingContext2D, s: Session) {
   ctx.beginPath();
   ctx.rect(x0, 0, mw, mh);
   ctx.clip();
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  drawStreets(ctx, s, toScreen, car.x, car.z, scale);
 
   const tr = s.nav?.tracker;
   if (tr && tr.pts.length > 1) {
@@ -179,10 +238,9 @@ function drawMap(ctx: CanvasRenderingContext2D, s: Session) {
         ahead.push(tr.pts[i]);
       }
     }
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
     stroke(ctx, done, toScreen, car.x, car.z, C.done, 9);
-    stroke(ctx, ahead, toScreen, car.x, car.z, C.route, 12);
+    stroke(ctx, ahead, toScreen, car.x, car.z, C.routeCase, 14);
+    stroke(ctx, ahead, toScreen, car.x, car.z, C.route, 10);
   }
   ctx.restore();
 
@@ -194,10 +252,81 @@ function drawMap(ctx: CanvasRenderingContext2D, s: Session) {
   ctx.lineTo(cx - 13, cy + 13);
   ctx.closePath();
   ctx.fillStyle = C.car;
-  ctx.strokeStyle = '#0b2a52';
-  ctx.lineWidth = 3;
-  ctx.fill();
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 4;
   ctx.stroke();
+  ctx.fill();
+}
+
+/** OSM streets around the car: casings first, then fills, minor roads under major ones, then 1–2 name labels. */
+function drawStreets(
+  ctx: CanvasRenderingContext2D,
+  s: Session,
+  toScreen: (x: number, z: number) => [number, number],
+  carX: number,
+  carZ: number,
+  scale: number,
+) {
+  const reach = VIEW_M * 1.6;
+  const near: MapSeg[] = [];
+  for (const g of mapSegs(s)) {
+    if (Math.abs(g.mx - carX) - g.half < reach && Math.abs(g.mz - carZ) - g.half < reach) near.push(g);
+  }
+  const width = (g: MapSeg) => Math.max(ROAD_STYLE[g.cls][0], g.width * scale);
+  for (const pass of ['case', 'fill'] as const) {
+    for (const cls of ORDER) {
+      const [, casing, fill] = ROAD_STYLE[cls];
+      ctx.strokeStyle = pass === 'case' ? casing : fill;
+      // Group by rounded width so each class is a handful of strokes, not one per segment.
+      const byWidth = new Map<number, MapSeg[]>();
+      for (const g of near) {
+        if (g.cls !== cls) continue;
+        const w = Math.round(width(g));
+        let list = byWidth.get(w);
+        if (!list) byWidth.set(w, (list = []));
+        list.push(g);
+      }
+      for (const [w, list] of byWidth) {
+        ctx.lineWidth = pass === 'case' ? w + 3 : w;
+        ctx.beginPath();
+        for (const g of list) {
+          const [ax, ay] = toScreen(g.ax, g.az);
+          const [bx, by] = toScreen(g.bx, g.bz);
+          ctx.moveTo(ax, ay);
+          ctx.lineTo(bx, by);
+        }
+        ctx.stroke();
+      }
+    }
+  }
+
+  // Labels: the names of the two nearest named roads, along a long nearby segment of each.
+  const seen = new Set<string>();
+  const labelled = near
+    .filter((g) => g.name && g.half > 12)
+    .map((g) => ({ g, d: Math.hypot(g.mx - carX, g.mz - carZ) }))
+    .sort((a, b) => a.d - b.d);
+  for (const { g } of labelled) {
+    if (seen.has(g.name) || seen.size >= 2) continue;
+    seen.add(g.name);
+    const [ax, ay] = toScreen(g.ax, g.az);
+    const [bx, by] = toScreen(g.bx, g.bz);
+    let a = Math.atan2(by - ay, bx - ax);
+    if (a > Math.PI / 2) a -= Math.PI;
+    if (a < -Math.PI / 2) a += Math.PI;
+    ctx.save();
+    ctx.translate((ax + bx) / 2, (ay + by) / 2);
+    ctx.rotate(a);
+    ctx.font = `600 15px ${FONT}`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = 'rgba(255,255,255,0.95)';
+    ctx.strokeText(g.name, 0, 0);
+    ctx.fillStyle = '#3c4043';
+    ctx.fillText(g.name, 0, 0);
+    ctx.restore();
+  }
 }
 
 /** Stroke a polyline, skipping points far outside the view to keep it cheap. */

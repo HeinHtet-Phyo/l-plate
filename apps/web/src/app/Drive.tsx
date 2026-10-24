@@ -21,8 +21,11 @@ const QUERY = new URLSearchParams(location.search);
 const GOOGLE_KEY = (import.meta.env.VITE_GOOGLE_MAPS_BROWSER_KEY as string | undefined)?.trim() || '';
 import routesJson from '../routes/test-routes.json';
 import startsJson from '../routes/free-starts.json';
+import splatRoutesJson from '../routes/splat-routes.json';
 
 const ROUTES = routesJson as unknown as TestRoute[];
+/** Sat-nav routes for free starts that have one (the splat capture), so the sat nav and Sam give directions. */
+const START_ROUTES = splatRoutesJson as unknown as TestRoute[];
 const STARTS = startsJson as { id: string; name: string; lat: number; lng: number; heading: number }[];
 const DEG = Math.PI / 180;
 
@@ -50,7 +53,7 @@ export function Drive(props: DriveProps) {
   const lowQuality = QUERY.get('quality') === 'low';
   const [dpr, setDpr] = useState(props.gpu.software ? Math.min(1, maxDpr) : lowQuality ? Math.min(1.5, maxDpr) : maxDpr);
   const started = useRef(false);
-  const route = props.kind === 'route' ? ROUTES.find((r) => r.id === props.id) : undefined;
+  const route = props.kind === 'route' ? ROUTES.find((r) => r.id === props.id) : START_ROUTES.find((r) => r.id === props.id);
   const start = props.kind === 'route' ? route?.start : STARTS.find((s) => s.id === props.id);
   const place = props.kind === 'route' ? route?.centre.name ?? props.id : STARTS.find((s) => s.id === props.id)?.name ?? props.id;
 
