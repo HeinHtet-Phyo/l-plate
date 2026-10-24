@@ -17,6 +17,9 @@ behind an **OpenAI-compatible API**. Any OpenAI SDK or framework works by changi
 - Base URL: `https://api.tokenfactory.nebius.com/v1` (older docs say `api.studio.nebius.com` — don't use it)
 - Key: `NEBIUS_API_KEY`, from tokenfactory.nebius.com → profile → API Keys
 - Playground and model catalogue: https://tokenfactory.nebius.com/models
+- Deeper API reference (Responses API, rerank, vision, rate limits, deprecations, data retention): the
+  `nebius-token-factory` skill. For anything else Nebius (fine-tuning, dedicated endpoints, Sandboxes, AI Cloud),
+  start at `nebius-corrections`.
 
 ## Hackathon brief (judging lens)
 
@@ -113,6 +116,9 @@ resp = client.chat.completions.create(
 )
 ticket = Ticket.model_validate_json(resp.choices[0].message.content)
 ```
+
+The spec also accepts the standard `response_format={"type": "json_schema", "json_schema": {"name": ..., "schema": ..., "strict": True}}`
+(see `nebius-token-factory`). If `guided_json` misbehaves on a model, try that, and log what happened in `docs/MODEL_FAILURES.md`.
 
 **Tool calling.** This is the standard OpenAI `tools=[{"type": "function", "function": {...}}]` loop.
 Loop until `message.tool_calls` is empty, and append each result as

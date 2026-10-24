@@ -1,4 +1,4 @@
-# Agent memory system: @minthantkyaw28: 2026-10-24 11:33–11:44
+# Agent memory system: @minthantkyaw28: 2026-10-24 11:33–11:57
 
 - **Agent:** Claude Code / Opus 5.5
 - **Branch:** main
@@ -22,6 +22,15 @@ the team's state, and where work was left off. Also add the Tavily web-search sk
   and the 3 newest session logs.
 - `.gitattributes`: `merge=union` for `DECISIONS.md` and `MODEL_FAILURES.md`.
 - `README.md`: teammate setup and an overview of the system.
+- Nebius skills (pasted in mid-session from another project, L-Plate):
+  - **Deleted 14 duplicates.** `nebius-api-debug` … `nebius-serverless-troubleshooting` were byte-identical to the `nebius-cloud`
+    plugin at `nebius/skills@8707c2d`, so they loaded twice.
+  - **Kept and rewrote 4 for this repo:** `nebius-corrections`, `nebius-token-factory`, `nebius-token-factory-custom-models`
+    and `nebius-sandboxes`. Removed the `apps/server/.env`, `VITE_`, learner-data, `skills-lock.json`, T-037/D-005 and Gemini
+    references, and added "Using it in Nebius-Hack" and "Rules for Nebius in this repo" sections.
+  - **Cross-linked** `token-factory` and `nebius-token-factory`. Added the `json_schema` alternative to `guided_json`.
+  - **`.claude/settings.json`:** denies `nebius config get private-key`. AGENTS.md now has an "ask before anything billable" rule.
+    `.DS_Store` is gitignored.
 
 ## State left in
 - No app code yet. The project idea isn't chosen, so `docs/PROJECT.md` is mostly TBD.
@@ -42,6 +51,11 @@ the team's state, and where work was left off. Also add the Tavily web-search sk
   Don't run `tvly init` / `npx skills add`, because they install a duplicate set into `~/.claude/skills`. Search and extract work keyless
   up to a free rate limit; map, crawl and research need the key. No live Tavily call was tested (no key or CLI on this laptop).
 - `tavily-dynamic-search` pre-approves `python3 *` / `uv run *` / `jq *` while the skill is active (upstream setting, left as is).
+- I verified two hazards in the `nebius-cloud` plugin myself. (1) Its `nebius-serverless-jobs/assets/job-create.sh` and
+  `nebius-serverless-endpoints/assets/endpoint-create.sh` are broken: on line 7, `\` followed by `# comment` ends the command,
+  so it runs a **real create without `--dry-run`**. Never run or paste them. (2) 11 plugin skills pre-approve
+  `nebius config get:*`. `nebius-corrections` records both.
 
 ## Decisions / failures logged
-- `docs/DECISIONS.md`: "The repo is the team's shared agent memory" and "Vendor the Tavily skills into .claude/skills/".
+- `docs/DECISIONS.md`: "The repo is the team's shared agent memory", "Vendor the Tavily skills into .claude/skills/",
+  and "Nebius skills: plugin for AI Cloud, repo copies only for our own".

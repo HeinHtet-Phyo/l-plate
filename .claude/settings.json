@@ -7,6 +7,11 @@
     "playwright@claude-plugins-official": true,
     "commit-commands@claude-plugins-official": true
   },
+  "permissions": {
+    "deny": [
+      "Bash(nebius config get private-key:*)"
+    ]
+  },
   "hooks": {
     "SessionStart": [
       {

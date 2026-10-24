@@ -25,7 +25,7 @@ Then tell your human, in a few lines, where things stand and what you plan to wo
 | `docs/DECISIONS.md` | Why we chose X over Y | Everyone | **Append-only**, newest at the bottom |
 | `docs/MODEL_FAILURES.md` | Where models broke: bad JSON, wrong tool calls, hallucinations, latency | Everyone | **Append-only**. This is demo material |
 | `docs/sessions/*.md` | One log per agent session: what was done, the state left in, next steps | Author only | New file per session, never edit others' |
-| `.claude/skills/*/SKILL.md` | How-to guides (Token Factory API, Tavily search, project memory, demo prep) | Anyone | Plain markdown. Any agent can read them |
+| `.claude/skills/*/SKILL.md` | How-to guides (Token Factory and other Nebius products, Tavily search, project memory, demo prep) | Anyone | Plain markdown. Any agent can read them |
 | `.claude/commands/*.md` | Step-by-step workflows (start, claim, sync, handoff…) | Anyone | Plain markdown. Any agent can follow them |
 
 ## 3. Working rules
@@ -41,6 +41,8 @@ Then tell your human, in a few lines, where things stand and what you plan to wo
 - **Be concrete.** Give file paths (`src/agent.py:42`), commands, exact error text, model IDs and numbers.
   "Next" means actions ("wire `/api/search` to `retriever.search()`"), not themes ("continue backend").
 - **Trust the code over the docs.** If `git log` or the code contradicts `HANDOFF.md`, fix the doc and tell your human.
+- **Ask before anything billable** beyond per-token inference: dedicated endpoints, fine-tunes, GPU VMs, Serverless
+  jobs or endpoints. If you leave one running, put it and the command that stops it in your `HANDOFF.md` lane.
 - **Secrets never enter git, chat or logs.** Keys go in `.env` (gitignored); `.env.example` lists the names.
   Before every commit, check that `git diff --cached` contains no keys.
 - **Ship the demo path first.** Get one end-to-end path working before adding features. Judging starts **16:30**.
@@ -76,7 +78,10 @@ Then tell your human, in a few lines, where things stand and what you plan to wo
 - **Event:** Noetic x Nebius hackathon, a one-day build. Judging at 16:30. Judges want *a working example with a clear
   purpose*: show **what it does**, **where models struggle**, and **why it matters**.
 - **LLMs:** Nebius Token Factory (OpenAI-compatible, `https://api.tokenfactory.nebius.com/v1`, key `NEBIUS_API_KEY`).
-  Read `.claude/skills/token-factory/SKILL.md` before writing any LLM call.
+  Read `.claude/skills/token-factory/SKILL.md` before writing any LLM call. `nebius-token-factory` is the deeper API reference.
+  For anything else Nebius (fine-tuning, dedicated endpoints, Sandboxes, AI Cloud), start at
+  `.claude/skills/nebius-corrections/SKILL.md`. It routes to the right skill and lists known errors in the `nebius-cloud`
+  plugin's skills.
 - **Web search:** the Tavily skills (`.claude/skills/tavily-*`: search, extract, map, crawl, research) call the `tvly` CLI.
   Install it with `uv tool install tavily-cli`; the key is `TAVILY_API_KEY`. For Tavily inside app code, read `tavily-best-practices`.
 - **Idea, stack, run and test commands:** see `docs/PROJECT.md`. Fill it in as soon as they're decided.

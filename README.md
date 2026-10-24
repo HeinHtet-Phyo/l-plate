@@ -32,7 +32,7 @@ docs/DECISIONS.md      append-only "why we chose X"
 docs/MODEL_FAILURES.md append-only "where the model broke" (demo material for judging)
 docs/sessions/         one log per agent session: done / state left in / next steps
 .claude/commands/      /start /claim /sync /board /decision /log-failure /handoff
-.claude/skills/        token-factory, tavily, project-memory, demo-prep
+.claude/skills/        token-factory, nebius-* (Token Factory, fine-tuning, Sandboxes, corrections), tavily-*, project-memory, demo-prep
 .claude/hooks/         session-start.sh: loads the board and git status into every Claude session
 ```
 

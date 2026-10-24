@@ -4,14 +4,14 @@
 > **Edit only your own lane.** In the shared sections, change single lines; don't reorder or rewrite.
 > Keep this file under ~150 lines. Details belong in `docs/sessions/`.
 
-Last updated: 2026-10-24 11:44 by @minthantkyaw28
+Last updated: 2026-10-24 11:57 by @minthantkyaw28
 
 ## Snapshot
 
 - **Idea:** not chosen yet. Decide it, then fill in `docs/PROJECT.md`.
 - **Works end-to-end:** nothing yet (no app code).
 - **Repo has:** the shared agent memory system (AGENTS.md, this board, `docs/`, `.claude/` commands, skills and hook),
-  the Token Factory skill, the Tavily skills, and project plugins.
+  the Token Factory skill, the Nebius skills (start at `nebius-corrections`), the Tavily skills, and project plugins.
 - **Judging:** 16:30 today.
 
 ## Up next (unclaimed)
@@ -25,11 +25,11 @@ Last updated: 2026-10-24 11:44 by @minthantkyaw28
 ## Lanes
 
 ### @minthantkyaw28
-- **Status:** done. Set up the agent memory system and the Tavily skills.
+- **Status:** done. Set up the agent memory system, the Tavily skills, and cleaned up and adapted the Nebius skills.
 - **Working on:** nothing
 - **Next:** pick a task from Up next
 - **Branch:** main
-- **Updated:** 2026-10-24 11:44
+- **Updated:** 2026-10-24 11:57
 - **Log:** `docs/sessions/2026-10-24-1133-minthantkyaw28-agent-memory-system.md`
 
 ### @christopherwhite06

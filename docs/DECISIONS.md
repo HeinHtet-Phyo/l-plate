@@ -30,3 +30,9 @@
 - **Alternatives:** the Tavily plugin marketplace (renames the skills to `tavily:*`; an extra step per person); `npx skills add` / `tvly init` (installs per user into `~/.claude/skills`, which risks duplicates).
 - **Affects:** everyone. Each person still installs the `tvly` CLI (`uv tool install tavily-cli`). Updating means re-copying from upstream.
 
+## 2026-10-24 11:57: Nebius skills: plugin for AI Cloud, repo copies only for our own (@minthantkyaw28)
+- **Decision:** the 14 AI Cloud skills (`nebius-api-debug` … `nebius-serverless-troubleshooting`) come only from the `nebius-cloud` plugin, so the pasted copies were deleted. The 4 skills not in the plugin (`nebius-corrections`, `nebius-token-factory`, `nebius-token-factory-custom-models`, `nebius-sandboxes`) live in `.claude/skills/`. They were rewritten from another project (L-Plate) for this repo. `.claude/settings.json` denies `nebius config get private-key`.
+- **Why:** the copies were byte-identical to the plugin at `nebius/skills@8707c2d`, so every skill loaded twice. The 4 extras held another project's paths and rules (`apps/server/.env`, `VITE_`, learner data). 11 plugin skills pre-approve `nebius config get:*`, which also matches the private-key command.
+- **Alternatives:** keep the vendored copies and drop the plugin (loses updates, and everyone's settings already enable the plugin); keep the L-Plate text as is (misleading paths and rules).
+- **Affects:** anyone using Nebius beyond basic inference. Start at `nebius-corrections`. Don't vendor plugin skills into `.claude/skills/`.
+
