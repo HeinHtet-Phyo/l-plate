@@ -7,7 +7,7 @@ import type { Session } from '../../sim/session.ts';
 import type { TextureSet } from '../textures.ts';
 import type { CreateCity, RenderPart } from '../types.ts';
 import { shared } from '../atmosphere/uniforms.ts';
-import { ensureLampMap, syncCar, type CityPiece } from './common.ts';
+import { ensureLampMap, syncShared, type CityPiece } from './common.ts';
 import { buildSurface } from './surface.ts';
 import { buildMarkings } from './markings.ts';
 import { buildBuildings } from './buildings.ts';
@@ -42,7 +42,7 @@ export const createCity: CreateCity = (s: Session, tex: TextureSet): RenderPart 
   return {
     object,
     update(s: Session, dt: number) {
-      syncCar(s);
+      syncShared(s);
       for (const p of pieces) p.update?.(s, dt);
     },
     dispose() {

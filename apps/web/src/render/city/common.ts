@@ -37,8 +37,25 @@ export function ensureLampMap(s: Session): THREE.DataTexture | null {
   return t;
 }
 
-/** Keeps the headlight uniforms on the learner's car (the atmosphere may set the same values later in the frame). */
-export function syncCar(s: Session) {
+const SKY_CLEAR = new THREE.Color(0x6fa3d8);
+const SKY_GREY = new THREE.Color(0xa7adb3);
+const SKY_NIGHT = new THREE.Color(0x05070c);
+
+/**
+ * Sets the shared uniforms from the session every frame: day/overcast/rain from s.conditions, the clock,
+ * a sky colour, and the headlights on the learner's car. The app calls city.update before atmosphere.update,
+ * so the real atmosphere (when merged) overrides these with its own values; until then the city still
+ * gets night, rain and headlights right.
+ */
+export function syncShared(s: Session) {
+  const c = s.conditions;
+  if (c) {
+    shared.uDay.value = c.daylight;
+    shared.uOvercast.value = c.cloud;
+    shared.uRain.value = c.rain;
+    shared.uSkyColour.value.copy(SKY_CLEAR).lerp(SKY_GREY, c.cloud).lerp(SKY_NIGHT, 1 - c.daylight);
+  }
+  shared.uTime.value = s.time;
   const car = s.world?.car;
   if (!car) return;
   shared.uCarPos.value.set(car.x, 1.2, car.z);
