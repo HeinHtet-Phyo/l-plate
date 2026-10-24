@@ -9,6 +9,7 @@ const OUT_DIR = 'apps/web/public/osm';
 const args = process.argv.slice(2);
 const force = args.includes('--force');
 const only = args.filter((a) => !a.startsWith('--'));
+const corridor = Number(args.find((a) => a.startsWith('--corridor='))?.split('=')[1] ?? 300);
 
 const ROAD_RE =
   '^(motorway|motorway_link|trunk|trunk_link|primary|primary_link|secondary|secondary_link|tertiary|tertiary_link|unclassified|residential|living_street|service|busway)$';
@@ -49,9 +50,9 @@ function areas(): Area[] {
     const lngs = r.path.map((p) => p.lng);
     const origin = { lat: (Math.min(...lats) + Math.max(...lats)) / 2, lng: (Math.min(...lngs) + Math.max(...lngs)) / 2 };
     const far = Math.max(...r.path.map((p) => haversine(origin, p)));
-    const radius = Math.ceil((far + 300) / 50) * 50;
+    const radius = Math.ceil((far + corridor) / 50) * 50;
     const poly = thin(r.path, 25).map((p) => `${p.lat.toFixed(6)},${p.lng.toFixed(6)}`).join(',');
-    list.push({ id: r.id, origin, radius, filter: `(around:300,${poly})` });
+    list.push({ id: r.id, origin, radius, filter: `(around:${corridor},${poly})` });
   }
   return list;
 }

@@ -1,5 +1,5 @@
 // The phone controller, served at /c/:session?t=…: hold the phone sideways like a steering wheel.
-// Tilt steers (touch-drag on the wheel as the fallback), the pedals are analogue, and the
+// Steering comes only from the phone's gyro (motion sensors); the on-screen wheel just shows the angle. The pedals are analogue, and the
 // indicator stalks and handbrake light up from the car's state, which the simulator sends back.
 import { useEffect, useMemo, useReducer, useRef, useState, type PointerEvent as ReactPointerEvent, type RefObject } from 'react';
 import type { PhoneCommand, SensorStatus } from '@lplate/shared';
@@ -31,7 +31,6 @@ function Controller({ session, token }: { session: string; token: string }) {
   // Live input lives in refs so the 30 Hz send loop never waits on React.
   const tilt = useRef<{ angle: number; flat: boolean } | null>(null);
   const centre = useRef<number | null>(null);
-  const touchSteer = useRef<number | null>(null);
   const throttle = useRef(0);
   const brake = useRef(0);
   const wheelEl = useRef<HTMLDivElement>(null);
@@ -42,9 +41,8 @@ function Controller({ session, token }: { session: string; token: string }) {
     return () => link.stop();
   }, [link]);
 
-  /** Touch-drag wins while a finger is on the wheel; otherwise tilt, if the sensor is usable. */
+  /** Steering comes only from the phone's motion sensors (gyro + accelerometer fusion). */
   function currentSteer(): number {
-    if (touchSteer.current !== null) return touchSteer.current;
     const t = tilt.current;
     if (!t || t.flat || centre.current === null) return 0;
     return steerFromAngle(t.angle, centre.current);
@@ -88,7 +86,6 @@ function Controller({ session, token }: { session: string; token: string }) {
       }
       throttle.current = 0;
       brake.current = 0;
-      touchSteer.current = null;
       link.send({ type: 'controls', steer: 0, throttle: 0, brake: 0 });
     };
     document.addEventListener('visibilitychange', onVisibility);
@@ -112,11 +109,14 @@ function Controller({ session, token }: { session: string; token: string }) {
 
     // iOS 13+ needs an explicit permission prompt, and only from a tap.
     const DOE = window.DeviceOrientationEvent as unknown as { requestPermission?: () => Promise<string> } | undefined;
+    const DME = window.DeviceMotionEvent as unknown as { requestPermission?: () => Promise<string> } | undefined;
     let status: SensorStatus | null = null;
     if (!DOE || !window.isSecureContext) status = 'unavailable';
     else if (typeof DOE.requestPermission === 'function') {
       try {
-        if ((await DOE.requestPermission()) !== 'granted') status = 'denied';
+        // Ask for both: orientation (the wheel angle) and motion (the gyro behind it).
+        const [o, m] = await Promise.all([DOE.requestPermission(), DME?.requestPermission?.() ?? Promise.resolve('granted')]);
+        if (o !== 'granted' || m !== 'granted') status = 'denied';
       } catch {
         status = 'denied';
       }
@@ -155,6 +155,9 @@ function Controller({ session, token }: { session: string; token: string }) {
           <button className={`ph-btn ${host?.handbrake ? 'ph-btn-on' : ''}`} onClick={() => command('handbrake')}>
             <span className="ph-hb-icon">(P)</span> Handbrake
           </button>
+          <button className={`ph-btn ${host?.gear === 'R' ? 'ph-btn-on' : ''}`} onClick={() => command('reverse')}>
+            {host?.gear === 'R' ? 'R · Reverse' : 'D · Reverse?'}
+          </button>
           <button className="ph-btn" onClick={() => command('recover')}>Recover</button>
           <button className="ph-btn" onClick={recentre} disabled={!tiltWorks}>Recentre</button>
         </div>
@@ -163,7 +166,7 @@ function Controller({ session, token }: { session: string; token: string }) {
 
       <main className="ph-controls">
         <Pedal label="Brake" kind="brake" value={brake} />
-        <Wheel wheelRef={wheelEl} touchSteer={touchSteer} speed={host?.speedMph ?? null} status={link.status} sensor={sensor} />
+        <Wheel wheelRef={wheelEl} speed={host?.speedMph ?? null} status={link.status} sensor={sensor} />
         <Pedal label="Accelerate" kind="throttle" value={throttle} />
       </main>
 
@@ -172,7 +175,7 @@ function Controller({ session, token }: { session: string; token: string }) {
           <h1>L-Plate</h1>
           <p className="ph-status">{statusText(link.status)}</p>
           <button className="ph-start" onClick={start}>Tap to start</button>
-          <p className="ph-help">Hold the phone sideways like a steering wheel and tilt it to steer. Left thumb brakes, right thumb accelerates: slide up the pedal to press harder.</p>
+          <p className="ph-help">Hold the phone sideways like a steering wheel and turn it to steer: the phone's gyro is the wheel. Left thumb brakes, right thumb accelerates: slide up the pedal to press harder. Stop, then press Reverse to back up.</p>
         </div>
       )}
     </div>
@@ -187,8 +190,8 @@ function statusText(s: LinkStatus): string {
 
 function sensorText(s: SensorStatus | null): string | null {
   if (s === 'flat') return 'Lift the phone up to steer';
-  if (s === 'denied') return 'Motion access denied: drag the wheel to steer';
-  if (s === 'unavailable') return 'No tilt sensor: drag the wheel to steer';
+  if (s === 'denied') return 'Motion access denied: allow Motion & Orientation for this site to steer';
+  if (s === 'unavailable') return 'No motion sensor: open this page over HTTPS (pnpm tunnel) on a phone';
   return null;
 }
 
@@ -232,42 +235,20 @@ function Pedal({ label, kind, value }: { label: string; kind: 'brake' | 'throttl
 
 function Wheel({
   wheelRef,
-  touchSteer,
   speed,
   status,
   sensor,
 }: {
   wheelRef: RefObject<HTMLDivElement | null>;
-  touchSteer: RefObject<number | null>;
   speed: number | null;
   status: LinkStatus;
   sensor: SensorStatus | null;
 }) {
-  const drag = useRef<{ id: number; x: number; width: number } | null>(null);
   const hint = sensorText(sensor);
 
-  const end = (e: ReactPointerEvent<HTMLDivElement>) => {
-    if (drag.current?.id !== e.pointerId) return;
-    drag.current = null;
-    touchSteer.current = null;
-  };
-
   return (
-    <div
-      className="ph-wheel-area"
-      onPointerDown={(e) => {
-        if (drag.current) return;
-        e.currentTarget.setPointerCapture(e.pointerId);
-        drag.current = { id: e.pointerId, x: e.clientX, width: e.currentTarget.getBoundingClientRect().width };
-        touchSteer.current = 0;
-      }}
-      onPointerMove={(e) => {
-        const d = drag.current;
-        if (d?.id === e.pointerId) touchSteer.current = clamp((e.clientX - d.x) / (d.width * 0.4), -1, 1);
-      }}
-      onPointerUp={end}
-      onPointerCancel={end}
-    >
+    // Display only: the wheel turns with the phone's gyro; touching it does nothing.
+    <div className="ph-wheel-area">
       <div className="ph-wheel" ref={wheelRef}>
         <svg viewBox="-100 -100 200 200" aria-hidden="true">
           <circle r="88" className="ph-wheel-rim" />

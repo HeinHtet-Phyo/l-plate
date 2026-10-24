@@ -1,0 +1,288 @@
+{
+ "upper-victorian-red": {
+  "file": "upper-victorian-red.jpg",
+  "aspect": "1:1",
+  "model": "gemini-3.1-flash-image",
+  "reviewer": "Qwen/Qwen3.8-27B",
+  "review": {
+   "front_on": true,
+   "matches": true,
+   "fills_frame": true,
+   "has_people": false,
+   "has_vehicles": false,
+   "has_text": false,
+   "issues": []
+  },
+  "attempts": 1
+ },
+ "ground-georgian-brick": {
+  "file": "ground-georgian-brick.jpg",
+  "aspect": "21:9",
+  "model": "gemini-3.1-flash-image",
+  "reviewer": "Qwen/Qwen3.8-27B",
+  "review": {
+   "front_on": true,
+   "matches": true,
+   "fills_frame": true,
+   "has_people": false,
+   "has_vehicles": false,
+   "has_text": false,
+   "issues": []
+  },
+  "attempts": 1
+ },
+ "ground-victorian-red": {
+  "file": "ground-victorian-red.jpg",
+  "aspect": "21:9",
+  "model": "gemini-3.1-flash-image",
+  "reviewer": "Qwen/Qwen3.8-27B",
+  "review": {
+   "front_on": true,
+   "matches": true,
+   "fills_frame": true,
+   "has_people": false,
+   "has_vehicles": false,
+   "has_text": false,
+   "issues": []
+  },
+  "attempts": 1
+ },
+ "upper-georgian-brick": {
+  "file": "upper-georgian-brick.jpg",
+  "aspect": "1:1",
+  "model": "gemini-3.1-flash-image",
+  "reviewer": "Qwen/Qwen3.8-27B",
+  "review": {
+   "front_on": true,
+   "matches": true,
+   "fills_frame": true,
+   "has_people": false,
+   "has_vehicles": false,
+   "has_text": false,
+   "issues": []
+  },
+  "attempts": 2
+ },
+ "upper-stucco-white": {
+  "file": "upper-stucco-white.jpg",
+  "aspect": "1:1",
+  "model": "gemini-3.1-flash-image",
+  "reviewer": "Qwen/Qwen3.8-27B",
+  "review": {
+   "front_on": true,
+   "matches": true,
+   "fills_frame": false,
+   "has_people": false,
+   "has_vehicles": false,
+   "has_text": false,
+   "issues": [
+    "Sky visible at the top of the frame",
+    "Texture does not fill the entire frame"
+   ]
+  },
+  "attempts": 1
+ },
+ "ground-stucco-white": {
+  "file": "ground-stucco-white.jpg",
+  "aspect": "21:9",
+  "model": "gemini-3.1-flash-image",
+  "reviewer": "Qwen/Qwen3.8-27B",
+  "review": {
+   "front_on": true,
+   "matches": true,
+   "fills_frame": true,
+   "has_people": false,
+   "has_vehicles": false,
+   "has_text": false,
+   "issues": []
+  },
+  "attempts": 1
+ },
+ "ground-shopfront": {
+  "file": "ground-shopfront.jpg",
+  "aspect": "21:9",
+  "model": "gemini-3.1-flash-image",
+  "reviewer": "Qwen/Qwen3.8-27B",
+  "review": {
+   "front_on": true,
+   "matches": true,
+   "fills_frame": false,
+   "has_people": false,
+   "has_vehicles": false,
+   "has_text": false,
+   "issues": [
+    "Includes pavement/ground at the bottom",
+    "Includes brick wall and vents above the fascia boards"
+   ]
+  },
+  "attempts": 1
+ },
+ "slate": {
+  "file": "slate.jpg",
+  "aspect": "1:1",
+  "model": "gemini-3.1-flash-image",
+  "reviewer": "Qwen/Qwen3.8-27B",
+  "review": {
+   "front_on": true,
+   "matches": true,
+   "fills_frame": true,
+   "has_people": false,
+   "has_vehicles": false,
+   "has_text": false,
+   "issues": []
+  },
+  "attempts": 1
+ },
+ "asphalt": {
+  "file": "asphalt.jpg",
+  "aspect": "1:1",
+  "model": "gemini-3.1-flash-image",
+  "reviewer": "Qwen/Qwen3.8-27B",
+  "review": {
+   "front_on": true,
+   "matches": true,
+   "fills_frame": true,
+   "has_people": false,
+   "has_vehicles": false,
+   "has_text": false,
+   "issues": []
+  },
+  "attempts": 1
+ },
+ "paving": {
+  "file": "paving.jpg",
+  "aspect": "1:1",
+  "model": "gemini-3.1-flash-image",
+  "reviewer": "Qwen/Qwen3.8-27B",
+  "review": {
+   "front_on": true,
+   "matches": true,
+   "fills_frame": true,
+   "has_people": false,
+   "has_vehicles": false,
+   "has_text": false,
+   "issues": []
+  },
+  "attempts": 1
+ },
+ "ground-portland-stone": {
+  "file": "ground-portland-stone.jpg",
+  "aspect": "21:9",
+  "model": "gemini-3.1-flash-image",
+  "reviewer": "Qwen/Qwen3.8-27B",
+  "review": {
+   "front_on": true,
+   "matches": true,
+   "fills_frame": true,
+   "has_people": false,
+   "has_vehicles": false,
+   "has_text": false,
+   "issues": [
+    "not reviewed"
+   ]
+  },
+  "attempts": 1
+ },
+ "ground-modern-flats": {
+  "file": "ground-modern-flats.jpg",
+  "aspect": "21:9",
+  "model": "gemini-3.1-flash-image",
+  "reviewer": "Qwen/Qwen3.8-27B",
+  "review": {
+   "front_on": true,
+   "matches": true,
+   "fills_frame": true,
+   "has_people": false,
+   "has_vehicles": false,
+   "has_text": false,
+   "issues": []
+  },
+  "attempts": 1
+ },
+ "upper-portland-stone": {
+  "file": "upper-portland-stone.jpg",
+  "aspect": "1:1",
+  "model": "gemini-3.1-flash-image",
+  "reviewer": "Qwen/Qwen3.8-27B",
+  "review": {
+   "front_on": true,
+   "matches": true,
+   "fills_frame": true,
+   "has_people": false,
+   "has_vehicles": false,
+   "has_text": false,
+   "issues": []
+  },
+  "attempts": 1
+ },
+ "upper-modern-flats": {
+  "file": "upper-modern-flats.jpg",
+  "aspect": "1:1",
+  "model": "gemini-3.1-flash-image",
+  "reviewer": "Qwen/Qwen3.8-27B",
+  "review": {
+   "front_on": true,
+   "matches": true,
+   "fills_frame": true,
+   "has_people": false,
+   "has_vehicles": false,
+   "has_text": false,
+   "issues": []
+  },
+  "attempts": 1
+ },
+ "ground-warehouse-brick": {
+  "file": "ground-warehouse-brick.jpg",
+  "aspect": "21:9",
+  "model": "gemini-3.1-flash-image",
+  "reviewer": "Qwen/Qwen3.8-27B",
+  "review": {
+   "front_on": true,
+   "matches": true,
+   "fills_frame": true,
+   "has_people": false,
+   "has_vehicles": false,
+   "has_text": false,
+   "issues": [
+    "not reviewed"
+   ]
+  },
+  "attempts": 1
+ },
+ "flat": {
+  "file": "flat.jpg",
+  "aspect": "1:1",
+  "model": "gemini-3.1-flash-image",
+  "reviewer": "Qwen/Qwen3.8-27B",
+  "review": {
+   "front_on": true,
+   "matches": true,
+   "fills_frame": true,
+   "has_people": false,
+   "has_vehicles": false,
+   "has_text": false,
+   "issues": [
+    "not reviewed"
+   ]
+  },
+  "attempts": 1
+ },
+ "upper-warehouse-brick": {
+  "file": "upper-warehouse-brick.jpg",
+  "aspect": "1:1",
+  "model": "gemini-3.1-flash-image",
+  "reviewer": "Qwen/Qwen3.8-27B",
+  "review": {
+   "front_on": true,
+   "matches": true,
+   "fills_frame": true,
+   "has_people": false,
+   "has_vehicles": false,
+   "has_text": false,
+   "issues": [
+    "not reviewed"
+   ]
+  },
+  "attempts": 1
+ }
+}

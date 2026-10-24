@@ -27,3 +27,11 @@ Not started:
 - React UI (menu, HUD, phone page, summary)
 - speech, tests, Highway Code build script, secret scan, README
 - typecheck/test/build have not been run yet
+
+# Changes requested on the day (override the spec)
+
+- **Reverse gear** (spec said "no reverse"): G on the keyboard or the phone's Reverse button, only when stopped; capped about 11 mph; creeps backwards like an automatic. The phone receives `gear` in its state.
+- **Phone steering is gyro-only:** the phone's motion sensors (orientation fusion, gyro + accelerometer) are the wheel; touch-drag steering was removed. Without motion sensors (desktop, or plain HTTP) the phone can't steer, so use `pnpm tunnel` (HTTPS) for phones.
+- **Goodmayes extract widened to a 600 m corridor** (spec: 300 m) so wrong turns stay on the map: 815 roads and 2,102 buildings, radius 1,750 m. Still 60 fps. Refetch with `pnpm osm:fetch goodmayes --force --corridor=600`.
+- **Generated textures only for Goodmayes' styles** (to save the Gemini budget): Victorian red, Georgian brick, stucco, modern flats, Portland stone, warehouse brick (upper + ground floors), shopfront, slate, flat roof, asphalt, paving. Office glass stays procedural.
+- **Instructor fallback model:** if `NEBIUS_MODEL_INSTRUCTOR` fails (Nebius returned 503s for it), the server retries once, then uses `NEBIUS_MODEL_INSTRUCTOR_FALLBACK` (default `deepseek-ai/DeepSeek-V4-Flash-0731`).

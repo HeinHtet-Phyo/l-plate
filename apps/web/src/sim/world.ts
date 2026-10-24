@@ -154,7 +154,7 @@ export class RoadWorld {
     ws.forEach(([x, z], i) => {
       const isOff = !this.grid.isCarriageway(x, z);
       if (isOff !== this.wheelsOff[i]) {
-        if (!silent) this.events.push({ type: 'bump', strength: Math.min(1, 0.25 + this.car.speed / 10) });
+        if (!silent) this.events.push({ type: 'bump', strength: Math.min(1, 0.25 + Math.abs(this.car.speed) / 10) });
         if (isOff && firstUp == null) firstUp = i;
       }
       this.wheelsOff[i] = isOff;
@@ -223,12 +223,12 @@ export class RoadWorld {
     this.time += dt;
     const car = this.car;
     const p = car.propose(c, dt);
-    const hit = p.speed > 0.01 ? this.hitsSomething(p.x, p.z, p.heading) : null;
+    const hit = Math.abs(p.speed) > 0.01 ? this.hitsSomething(p.x, p.z, p.heading) : null;
     if (hit) {
       car.speed *= 0.15;
       if (this.time - this.lastCollision > 1.5) {
         this.lastCollision = this.time;
-        this.events.push({ type: 'bump', strength: Math.min(1, 0.3 + p.speed / 8) });
+        this.events.push({ type: 'bump', strength: Math.min(1, 0.3 + Math.abs(p.speed) / 8) });
         this.events.push({ type: 'collision', what: hit });
       }
     } else {

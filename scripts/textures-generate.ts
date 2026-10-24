@@ -12,6 +12,7 @@ const REVIEW_MODEL = process.env.NEBIUS_MODEL_VISION ?? 'Qwen/Qwen3.8-27B';
 const OUT = 'apps/web/public/textures';
 const only = process.argv.slice(2).filter((a) => !a.startsWith('--'));
 const force = process.argv.includes('--force');
+const maxAttempts = Number(process.argv.find((a) => a.startsWith('--attempts='))?.split('=')[1] ?? 4);
 
 const BASE =
   'Seamless tileable architectural facade texture: a perfectly flat, orthographic front elevation, no perspective, soft even overcast light, filling the frame edge to edge, no sky, ground or border, left and right edges continue seamlessly. Photorealistic. No people, vehicles, trees, street furniture, text, logos or watermarks.';
@@ -133,7 +134,7 @@ const score = (r: Review) => [r.front_on, r.matches, r.fills_frame, !r.has_peopl
 async function run(job: Job, manifest: Record<string, unknown>) {
   let best: { img: { mime: string; data: string }; rev: Review; attempt: number } | null = null;
   let prompt = job.prompt;
-  for (let attempt = 1; attempt <= 4; attempt++) {
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     const img = await generate(prompt, job.aspect);
     let rev: Review;
     try {
@@ -159,6 +160,23 @@ async function main() {
   mkdirSync(OUT, { recursive: true });
   const mfile = `${OUT}/manifest.json`;
   const manifest: Record<string, unknown> = existsSync(mfile) ? JSON.parse(readFileSync(mfile, 'utf8')) : {};
+  if (process.argv.includes('--rereview')) {
+    for (const [id, e] of Object.entries(manifest) as [string, any][]) {
+      if (!(e.review?.issues ?? []).includes('not reviewed')) continue;
+      const job = jobs().find((j) => j.id === id);
+      if (!job) continue;
+      const data = readFileSync(`${OUT}/${e.file}`).toString('base64');
+      try {
+        const rev = await review({ mime: e.file.endsWith('.png') ? 'image/png' : 'image/jpeg', data }, job.checks);
+        e.review = rev;
+        console.log(`  ${id} re-review: score ${score(rev)}/6 ${rev.issues.join('; ').slice(0, 160)}`);
+        if (score(rev) < 5) delete manifest[id]; // regenerate below
+      } catch (err) {
+        console.warn(`  ${id} re-review failed: ${(err as Error).message.slice(0, 80)}`);
+      }
+    }
+    writeFileSync(mfile, JSON.stringify(manifest, null, 1));
+  }
   const todo = jobs().filter((j) => (!only.length || only.includes(j.id)) && (force || !manifest[j.id]));
   console.log(`Generating ${todo.length} textures with ${IMAGE_MODEL}, reviewed by ${REVIEW_MODEL}…`);
   const queue = [...todo];

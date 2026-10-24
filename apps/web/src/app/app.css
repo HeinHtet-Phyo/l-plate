@@ -105,3 +105,6 @@ kbd { background: #252c37; border: 1px solid var(--line); border-radius: 4px; pa
 .sev.serious { color: var(--amber); }
 .sev.dangerous { color: var(--bad); font-weight: 700; }
 .buttons { display: flex; gap: 10px; margin-top: 12px; }
+
+.gear { font-weight: 800; padding: 1px 7px; border-radius: 5px; background: #2a3240; }
+.gear.rev { background: #f2f2f2; color: #111; }

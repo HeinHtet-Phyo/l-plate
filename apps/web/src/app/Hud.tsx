@@ -12,6 +12,7 @@ export const KEYS: [string, string][] = [
   ['Q / E', 'indicators'],
   ['Space', 'handbrake'],
   ['R', 'recover'],
+  ['G', 'reverse / drive (when stopped)'],
   ['V', 'push-to-talk'],
   ['P', 'phone panel'],
   ['H', 'help'],
@@ -69,6 +70,7 @@ export function Hud({ session, gpu, host, onExit, onRestart, attribution, infill
           </span>
           <span className={`ind ${s.indicator === 'left' && s.indicatorLit ? 'on' : ''}`}>◀</span>
           <span className={`ind ${s.indicator === 'right' && s.indicatorLit ? 'on' : ''}`}>▶</span>
+          <span className={`gear ${s.gear === 'R' ? 'rev' : ''}`}>{s.gear}</span>
           {s.handbrake ? <span className="hb">(P) handbrake</span> : null}
         </div>
         {s.onPavement ? <div className="warn">You're on the pavement</div> : null}

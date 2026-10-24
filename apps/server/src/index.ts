@@ -14,12 +14,16 @@ const KEY = process.env.NEBIUS_API_KEY?.trim() || '';
 const MODEL_INSTRUCTOR = process.env.NEBIUS_MODEL_INSTRUCTOR || 'Qwen/Qwen3-30B-A3B-Instruct-2507';
 const MODEL_EXAMINER = process.env.NEBIUS_MODEL_EXAMINER || 'Qwen/Qwen3-235B-A22B-Instruct-2507';
 const MODEL_RERANK = process.env.NEBIUS_MODEL_RERANK || '';
+// Used when the instructor model is unavailable (Nebius returned 503s for it during the hackathon).
+const MODEL_INSTRUCTOR_FALLBACK = process.env.NEBIUS_MODEL_INSTRUCTOR_FALLBACK || 'deepseek-ai/DeepSeek-V4-Flash-0731';
 
 export function buildApp() {
   const app = Fastify({ logger: { level: process.env.LOG_LEVEL ?? 'info' } });
   const relay = new Relay();
   const limiter = new RateLimiter(1000);
   const nebius = KEY ? createNebius({ apiKey: KEY }) : null;
+  // Directions are time-critical: one quick retry, then the fallback model.
+  const nebiusFast = KEY ? createNebius({ apiKey: KEY, retries: 1, backoffMs: 300, timeoutMs: 8000 }) : null;
 
   app.register(websocket);
 
@@ -81,15 +85,21 @@ export function buildApp() {
       const asksRule = lastLearner && /rule|highway code|allowed|legal|should i|can i/i.test(lastLearner.text);
       const rules = asksRule ? await searchRules(nebius, lastLearner!.text, MODEL_RERANK).catch(() => []) : [];
       const t0 = Date.now();
-      const res = await nebius.chat({
-        model: MODEL_INSTRUCTOR,
-        messages: buildInstructorMessages(body, rules),
-        max_tokens: 120,
-        temperature: 0.3,
-      });
+      const ask = (model: string, client: typeof nebius) =>
+        client.chat({ model, messages: buildInstructorMessages(body, rules), max_tokens: 120, temperature: 0.3, reasoning_effort: 'none' });
+      let model = MODEL_INSTRUCTOR;
+      let res;
+      try {
+        res = await ask(model, nebiusFast!);
+      } catch (e) {
+        if (e instanceof NebiusError && (e.status === 401 || e.status === 402)) throw e;
+        req.log.warn({ err: (e as Error).message.slice(0, 120) }, 'instructor model failed; trying fallback');
+        model = MODEL_INSTRUCTOR_FALLBACK;
+        res = await ask(model, nebiusFast!);
+      }
       const text = cleanSpoken(res.choices?.[0]?.message?.content ?? '');
-      req.log.info({ ms: Date.now() - t0, model: MODEL_INSTRUCTOR }, 'instructor reply');
-      return { text, model: MODEL_INSTRUCTOR, ms: Date.now() - t0 };
+      req.log.info({ ms: Date.now() - t0, model }, 'instructor reply');
+      return { text, model, ms: Date.now() - t0 };
     } catch (e) {
       req.log.warn({ err: (e as Error).message }, 'instructor failed');
       const status = e instanceof NebiusError && e.status ? e.status : 502;

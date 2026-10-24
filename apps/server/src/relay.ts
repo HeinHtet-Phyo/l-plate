@@ -26,7 +26,7 @@ export const ALLOWED: Record<Role, Set<string>> = {
   host: new Set(['state', 'ping']),
 };
 
-const COMMANDS = new Set(['indicator-left', 'indicator-right', 'handbrake', 'recover']);
+const COMMANDS = new Set(['indicator-left', 'indicator-right', 'handbrake', 'recover', 'reverse']);
 const SENSORS = new Set(['ok', 'flat', 'denied', 'unavailable']);
 
 const token = () => randomBytes(16).toString('base64url');
@@ -51,6 +51,7 @@ export function sanitize(role: Role, msg: any): Record<string, unknown> | null {
         handbrake: !!msg.handbrake,
         speedMph: num(msg.speedMph, 0, 300) ? Math.round(msg.speedMph) : 0,
         driving: !!msg.driving,
+        gear: msg.gear === 'R' ? 'R' : 'D',
       };
     case 'ping':
       return { type: 'ping' };
