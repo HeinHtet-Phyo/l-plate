@@ -1,6 +1,6 @@
 {
   "enabledPlugins": {
-    "nebius-cloud@nebius": true,
+    "nebius-cloud@nebius": false,
     "frontend-design@claude-plugins-official": true,
     "feature-dev@claude-plugins-official": true,
     "context7@claude-plugins-official": true,
@@ -19,7 +19,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-start.sh\"",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.agents/hooks/session-start.sh\"",
             "timeout": 20
           }
         ]

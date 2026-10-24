@@ -1,4 +1,4 @@
-# Agent memory system: @minthantkyaw28: 2026-10-24 11:33–11:57
+# Agent memory system: @minthantkyaw28: 2026-10-24 11:33–12:57
 
 - **Agent:** Claude Code / Opus 5.5
 - **Branch:** main
@@ -59,3 +59,19 @@ the team's state, and where work was left off. Also add the Tavily web-search sk
 ## Decisions / failures logged
 - `docs/DECISIONS.md`: "The repo is the team's shared agent memory", "Vendor the Tavily skills into .claude/skills/",
   and "Nebius skills: plugin for AI Cloud, repo copies only for our own".
+
+## Update (12:10–12:57): live key tests, then made everything agent-agnostic
+- **Live tests** (keys in `.env`):
+  - Token Factory: 29 serverless models. Chat, streaming, JSON, tool calling, embeddings and **10 vision models** all work.
+    There's no image generation (404). Failures are logged in `docs/MODEL_FAILURES.md`: a DeepSeek empty JSON reply and a GLM 529 overload.
+  - Tavily: search and extract work (Researcher plan, 1,000 credits a month).
+  - Management API: read-only calls work. There are 0 dedicated endpoints, and 58 deployable templates.
+- **Agent-agnostic layout** (see the DECISIONS entry):
+  - Real skill files are in `.agents/skills/` (36 of them), with `.claude/skills/` symlinks for Claude Code.
+  - The workflows are now skills, so `/start` and the rest work in Claude Code and Cursor.
+  - The session-start hook lives in `.agents/hooks/` and is wired into `.claude/`, `.cursor/` and `.codex/`.
+  - The `nebius/skills` AI Cloud skills are installed via `npx skills` and pinned in `skills-lock.json`. The plugin is disabled.
+  - `job-create.sh` / `endpoint-create.sh` are patched so they really dry-run (checked with a stub `nebius`).
+  - `nebius-sandboxes` frontmatter now parses as strict YAML. Before the fix, Cursor showed an empty description.
+- **Verified:** `cursor-agent`, `codex exec` and `claude -p` each see all 36 skills exactly once. Cursor and Claude get the Team context block.
+- **The earlier "State left in" and "Next steps" above are superseded** by HANDOFF.md: the idea (L-Plate) was chosen by @HeinHtet-Phyo at 12:50.

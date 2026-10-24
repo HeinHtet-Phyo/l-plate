@@ -42,4 +42,18 @@
 - **Why:** the purpose is clear and easy to demo, and judges can play it themselves. Fault reports and live coaching give a natural "where models struggle" story (made-up rules, wrong road names, wrong fault severity).
 - **Alternatives:** keyboard controls (less memorable); a native app (no time).
 - **Affects:** everyone. See `docs/PROJECT.md` for the build order.
+## 2026-10-24 12:57: Agent-agnostic layout: everything canonical in .agents/, thin per-tool adapters (@minthantkyaw28)
+- **Decision:**
+  - All 36 skills, including the 7 workflows (`start` … `handoff`, formerly `.claude/commands/`), live in `.agents/skills/`. That's the standard project folder read by Cursor, Codex, Gemini CLI and Copilot.
+  - Claude Code gets relative symlinks in `.claude/skills/`.
+  - The session-start script moved to `.agents/hooks/`, wired for Claude (`.claude/settings.json`), Cursor (`.cursor/hooks.json`, JSON output) and Codex (`.codex/hooks.json`). Other agents run it by hand (AGENTS.md §1).
+  - The 14 `nebius/skills` AI Cloud skills are installed into `.agents/skills/` with `npx skills` and pinned in `skills-lock.json`. The Claude `nebius-cloud` plugin is disabled.
+  - The two broken upstream create scripts are patched so they really dry-run.
+- **Supersedes:** "Nebius skills: plugin for AI Cloud, repo copies only for our own" (the plugin only works in Claude Code).
+- **Why:** the team will use different tools (Cursor next). Verified live on 2026-10-24:
+  - Cursor (`cursor-agent`), Codex (`codex exec`) and Claude Code (`claude -p`) each list all 36 skills exactly once.
+  - Cursor and Claude Code get the Team context block, and Cursor loads AGENTS.md automatically.
+  - Codex reads AGENTS.md. Its hook needs folder trust and `/hooks` approval, so it wasn't auto-tested.
+- **Alternatives:** keep `.claude/` canonical and rely on Cursor's `.claude/skills` compatibility (Codex, Gemini and Copilot don't read it, and workflows would stay Claude-only); copy files per tool (they drift).
+- **Affects:** everyone. Edit skills only in `.agents/skills/`, and add the Claude symlink for new ones (AGENTS.md §6).
 

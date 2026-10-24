@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "command": "bash .agents/hooks/session-start.sh --format cursor",
+        "timeout": 20
+      }
+    ]
+  }
+}

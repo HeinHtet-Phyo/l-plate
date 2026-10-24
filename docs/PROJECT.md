@@ -10,7 +10,7 @@
   1. **what it does**,
   2. **where the models struggle** (evidence comes from `docs/MODEL_FAILURES.md`),
   3. **why it matters**.
-- **Constraint:** models run on Nebius Token Factory (see `.claude/skills/token-factory/SKILL.md`).
+- **Constraint:** models run on Nebius Token Factory (see `.agents/skills/token-factory/SKILL.md`).
 
 ## Team
 

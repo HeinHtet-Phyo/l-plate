@@ -1,0 +1,89 @@
+{
+  "version": 1,
+  "skills": {
+    "nebius-api-debug": {
+      "source": "nebius/skills",
+      "sourceType": "github",
+      "skillPath": "skills/nebius-api-debug/SKILL.md",
+      "computedHash": "1d7eb288973a0311dd68e5413d8dbffa790d3ceb5dbe412fbfe072d09f88d124"
+    },
+    "nebius-billing": {
+      "source": "nebius/skills",
+      "sourceType": "github",
+      "skillPath": "skills/nebius-billing/SKILL.md",
+      "computedHash": "ccaebbb562e5f1ccbc8ecfabf068d0c46e65fb95ecc987916497b104e9c57da4"
+    },
+    "nebius-capacity-quotas": {
+      "source": "nebius/skills",
+      "sourceType": "github",
+      "skillPath": "skills/nebius-capacity-quotas/SKILL.md",
+      "computedHash": "b297f1ab04c99dc72e124cc3c77e843ca5d4fa5c4dad0e537388a6c1c95ff721"
+    },
+    "nebius-cloud-basics": {
+      "source": "nebius/skills",
+      "sourceType": "github",
+      "skillPath": "skills/nebius-cloud-basics/SKILL.md",
+      "computedHash": "b210653c1414f59b5801465798de1a4b28e973531dcfd6f1bba8e4091cce58dd"
+    },
+    "nebius-compute-inventory": {
+      "source": "nebius/skills",
+      "sourceType": "github",
+      "skillPath": "skills/nebius-compute-inventory/SKILL.md",
+      "computedHash": "b56851a539ff86fae30eb227e2c8bfa5db85f1382e27069e4a7ddb1cb8abccf2"
+    },
+    "nebius-compute-provision": {
+      "source": "nebius/skills",
+      "sourceType": "github",
+      "skillPath": "skills/nebius-compute-provision/SKILL.md",
+      "computedHash": "9278e7c1d19251ff9174516b4a640a1d39a25ad6fd90eec7806d4f10e99fd4a0"
+    },
+    "nebius-devlabs": {
+      "source": "nebius/skills",
+      "sourceType": "github",
+      "skillPath": "skills/nebius-devlabs/SKILL.md",
+      "computedHash": "51bc72d1e6fc06b91ceaac6dc6cae3d01179ab86c2ae2492c3cfd3dffb5acfed"
+    },
+    "nebius-public-docs": {
+      "source": "nebius/skills",
+      "sourceType": "github",
+      "skillPath": "skills/nebius-public-docs/SKILL.md",
+      "computedHash": "fa9dac70355fa35689eca67d2b48522a24e9b46ebc09635a000cd0f359aa7953"
+    },
+    "nebius-serverless-data-secrets": {
+      "source": "nebius/skills",
+      "sourceType": "github",
+      "skillPath": "skills/nebius-serverless-data-secrets/SKILL.md",
+      "computedHash": "cdc687b45b9db00c198feedb5191d1c3f82493295308d66b2ffeedf1c229ea8d"
+    },
+    "nebius-serverless-endpoints": {
+      "source": "nebius/skills",
+      "sourceType": "github",
+      "skillPath": "skills/nebius-serverless-endpoints/SKILL.md",
+      "computedHash": "f10c7eeae20b78398d50e2f0f6a402ecd93a7ad11b489d8bc89564ef3a03640c"
+    },
+    "nebius-serverless-jobs": {
+      "source": "nebius/skills",
+      "sourceType": "github",
+      "skillPath": "skills/nebius-serverless-jobs/SKILL.md",
+      "computedHash": "e1c46dbb2407ddb743c7baf7ae81a0475f6985002919ee2d19cb42c9d43f06ca"
+    },
+    "nebius-serverless-recipes": {
+      "source": "nebius/skills",
+      "sourceType": "github",
+      "skillPath": "skills/nebius-serverless-recipes/SKILL.md",
+      "computedHash": "335107b93433d9ed1fbd0bb6936fb4cb27d4207404a97e3fdbb36b7d81796f85"
+    },
+    "nebius-serverless-setup": {
+      "source": "nebius/skills",
+      "sourceType": "github",
+      "skillPath": "skills/nebius-serverless-setup/SKILL.md",
+      "computedHash": "861f6ff72e45247a377a33db156025da110a27ff199b07f52938b3b3477dc764"
+    },
+    "nebius-serverless-troubleshooting": {
+      "source": "nebius/skills",
+      "sourceType": "github",
+      "skillPath": "skills/nebius-serverless-troubleshooting/SKILL.md",
+      "computedHash": "3b5a435b57fd42e25e51de00359f45557ff446ec4b2a4d7d16eb58074a4effd6"
+    }
+  }
+}

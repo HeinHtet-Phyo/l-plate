@@ -4,14 +4,16 @@
 > **Edit only your own lane.** In the shared sections, change single lines; don't reorder or rewrite.
 > Keep this file under ~150 lines. Details belong in `docs/sessions/`.
 
-Last updated: 2026-10-24 12:50 by @HeinHtet-Phyo
+Last updated: 2026-10-24 12:57 by @minthantkyaw28
 
 ## Snapshot
 
 - **Idea:** L-Plate, a driving-practice game on real UK streets with an AI instructor. See `docs/PROJECT.md`.
 - **Works end-to-end:** nothing yet (no app code).
-- **Repo has:** the shared agent memory system (AGENTS.md, this board, `docs/`, `.claude/` commands, skills and hook),
-  the Token Factory skill, the Nebius skills (start at `nebius-corrections`), the Tavily skills, and project plugins.
+- **Repo has:** the shared agent memory system (AGENTS.md, this board, `docs/`, workflow skills, session-start hook), tool-neutral
+  in `.agents/` with adapters for Claude Code (`.claude/`) and Cursor (`.cursor/`), plus Token Factory, Nebius and Tavily skills.
+- **Keys verified live (2026-10-24):** Token Factory (29 serverless models, chat/tools/JSON/vision/embeddings OK, no image
+  generation) and Tavily (search + extract OK). See `docs/MODEL_FAILURES.md` for what broke.
 - **Judging:** 16:30 today.
 
 ## Up next (unclaimed)
@@ -27,11 +29,11 @@ Last updated: 2026-10-24 12:50 by @HeinHtet-Phyo
 ## Lanes
 
 ### @minthantkyaw28
-- **Status:** done. Set up the agent memory system, the Tavily skills, and cleaned up and adapted the Nebius skills.
+- **Status:** done. Agent memory system, Tavily and Nebius skills, live key tests, and made it all agent-agnostic (Claude Code, Cursor, Codex).
 - **Working on:** nothing
 - **Next:** pick a task from Up next
 - **Branch:** main
-- **Updated:** 2026-10-24 11:57
+- **Updated:** 2026-10-24 12:57
 - **Log:** `docs/sessions/2026-10-24-1133-minthantkyaw28-agent-memory-system.md`
 
 ### @christopherwhite06
