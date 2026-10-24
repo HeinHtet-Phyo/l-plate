@@ -45,12 +45,12 @@ Last updated: 2026-10-24 15:10 by @christopherwhite06
 - **Log:** `DECISIONS.md`, `docs/MODEL-NOTES.md`
 
 ### @HeinHtet-Phyo
-- **Status:** in progress
-- **Working on:** L-Plate step 1: phone-to-laptop controller (QR pairing + WebSocket relay), in `app/`
-- **Next:** step 2, a simple 3D road and car driven by the phone
-- **Branch:** main
-- **Updated:** 2026-10-24 12:50
-- **Log:** none yet
+- **Status:** phone page and cabin done; **merged into `main`** by @christopherwhite06 (picked up automatically via `app/parts.ts` and `main.tsx`).
+- **Working on:** nothing; ready for integration
+- **Next:** Chris: (1) lazy-load `apps/web/src/phone/PhonePage.tsx` (default export) for `/c/*`; (2) `import { createCabin } from './render/cabin/index.ts'` and follow the TEAM-PLAN render loop (`cabin.update(s, dt, worldCam)`, `cabin.renderMirrors(gl, scene, frame)`, then a second pass after `clearDepth`). Merge `hein` into `main`, or tell me to open a PR. Optional: Google map overlay (§11).
+- **Branch:** `hein`
+- **Updated:** 2026-10-24 14:05
+- **Log:** `docs/sessions/2026-10-24-1325-HeinHtet-Phyo-phone-controller.md`
 
 ### @Aryaan2303
 - **Status:** not started
