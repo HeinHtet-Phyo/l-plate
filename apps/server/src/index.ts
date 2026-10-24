@@ -4,6 +4,7 @@ import websocket from '@fastify/websocket';
 import { networkInterfaces } from 'node:os';
 import type { AppConfig, DebriefRequest, InstructorRequest, RefereeRequest, Role, RuleHit } from '@lplate/shared';
 import { Relay } from './relay.ts';
+import { readFileSync } from 'node:fs';
 import { createNebius, NebiusError } from './nebius.ts';
 import { RateLimiter, buildInstructorMessages, cleanSpoken, nebiusDebrief, ruleBasedDebrief } from './instructor.ts';
 import { routeVia } from './osrm.ts';
@@ -194,6 +195,13 @@ function lanUrls(): string[] {
 
 async function publicUrl(): Promise<string | null> {
   if (process.env.PUBLIC_URL) return process.env.PUBLIC_URL.replace(/\/$/, '');
+  // pnpm tunnel (scripts/tunnel.ts) writes its Pinggy URL here while it runs.
+  try {
+    const url = readFileSync(new URL('../../../.tunnel-url', import.meta.url), 'utf8').trim();
+    if (url) return url;
+  } catch {
+    /* no pnpm tunnel running */
+  }
   // An ngrok tunnel (pnpm tunnel), else a Cloudflare quick tunnel (pnpm tunnel:cf): both give the phone HTTPS.
   try {
     const r = await fetch('http://127.0.0.1:4040/api/tunnels', { signal: AbortSignal.timeout(800) });

@@ -178,7 +178,9 @@ export class Session {
     this.lightMap = bakeLightMap(this.lamps, ex.radius);
     this.world = new RoadWorld(this.net, this.grid, this.signals, ex.origin);
     for (const p of this.parked) this.world.addObstacle({ kind: 'car', x: p.x, z: p.z, hl: 2.1, hw: 0.9, heading: p.heading });
-    for (const t of this.trees) this.world.addObstacle({ kind: 'tree', x: t.x, z: t.z, hl: 0.3, hw: 0.3, heading: 0 });
+    // On the splat start the OSM trees and buildings aren't drawn, so they mustn't be hit either.
+    if (this.setup.id === 'elephant-splat') this.world.ignoreBuildings = true;
+    else for (const t of this.trees) this.world.addObstacle({ kind: 'tree', x: t.x, z: t.z, hl: 0.3, hw: 0.3, heading: 0 });
     this.world.place(spawn.x, spawn.z, spawn.heading);
     this.traffic = new Traffic(this.net, this.signals);
     if (this.setup.route) {
@@ -465,7 +467,8 @@ export class Session {
     this.traffic.busy = busyness(this.conditions.hour, this.conditions.weekend);
     const [cx, cz] = car.centre();
     this.traffic.step(dt, { x: cx, z: cz, heading: car.heading, speed: Math.max(0, car.speed) });
-    w.dynamicObstacles = this.traffic.obstacles();
+    // AI traffic is hidden on the splat start (the capture has its own cars), so it can't be hit there.
+    w.dynamicObstacles = this.setup.id === 'elephant-splat' ? [] : this.traffic.obstacles();
 
     // Camera spring and motion.
     const k = 260;

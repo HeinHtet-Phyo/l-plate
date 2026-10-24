@@ -79,6 +79,8 @@ export class RoadWorld {
   signals: Signals | null;
   origin: { lat: number; lng: number };
   car = new Vehicle();
+  /** Skip building collisions (the splat start draws no OSM buildings). */
+  ignoreBuildings = false;
   staticObstacles = new Grid<Obstacle>(10);
   /** Dynamic obstacles (AI cars), refreshed by the traffic system each step. */
   dynamicObstacles: Obstacle[] = [];
@@ -127,7 +129,7 @@ export class RoadWorld {
 
   private hitsSomething(x: number, z: number, heading: number): 'building' | 'car' | 'tree' | null {
     for (const [px, pz] of Vehicle.footprint(x, z, heading)) {
-      if (this.grid.isBuilding(px, pz) && !this.grid.isCarriageway(px, pz)) return 'building';
+      if (!this.ignoreBuildings && this.grid.isBuilding(px, pz) && !this.grid.isCarriageway(px, pz)) return 'building';
     }
     const [dx, dz] = headingVec(heading);
     // Box centre from eye: 0.05 m back, 0.37 m left.

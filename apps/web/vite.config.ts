@@ -11,7 +11,7 @@ export default defineConfig({
   plugins: [react(), ...(https ? [basicSsl()] : [])],
   server: {
     host: true, // listen on the LAN too, so a phone can reach the dev server
-    allowedHosts: ['.ngrok-free.app', '.ngrok.app', '.trycloudflare.com', '.lhr.life'],
+    allowedHosts: ['.ngrok-free.app', '.ngrok.app', '.trycloudflare.com', '.lhr.life', '.pinggy.net', '.pinggy-free.link', '.pinggy.link'],
     proxy: {
       '/api': server,
       '/ws': { target: server.replace('http', 'ws'), ws: true },
