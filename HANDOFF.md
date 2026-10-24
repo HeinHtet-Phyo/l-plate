@@ -4,7 +4,7 @@
 > **Edit only your own lane.** In the shared sections, change single lines; don't reorder or rewrite.
 > Keep this file under ~150 lines. Details belong in `docs/sessions/`.
 
-Last updated: 2026-10-24 13:58 by @minthantkyaw28
+Last updated: 2026-10-24 15:10 by @christopherwhite06
 
 ## Snapshot
 
@@ -37,11 +37,11 @@ Last updated: 2026-10-24 13:58 by @minthantkyaw28
 - **Log:** `docs/sessions/2026-10-24-1133-minthantkyaw28-agent-memory-system.md`
 
 ### @christopherwhite06
-- **Status:** in progress. Pushed the L-Plate base: pnpm workspace (`apps/web`, `apps/server`, `packages/shared`), OSM data for all 9 areas + 5 test routes, server (phone relay, Nebius instructor + examiner debrief, reroute), browser sim core. **Work split: `TEAM-PLAN.md`.**
-- **Working on:** app shell, render loop, HUD, menu, integration (TEAM-PLAN §1). Target: `?route=goodmayes` end to end by 16:30.
+- **Status:** in progress. App shell done and pushed: menu, drive screen (two-pass render loop, adaptive dpr), HUD, lesson summary with Nebius debrief, phone QR panel. `?route=goodmayes` drives end to end at 60 fps with fallback visuals; your render modules replace the fallbacks automatically when merged (`apps/web/src/app/parts.ts`).
+- **Working on:** integration and polish; merging your PRs. Run it: server `PORT=8090 pnpm --filter @lplate/server dev`, web `SERVER_PORT=8090 pnpm --filter @lplate/web dev -- --port 5174`.
 - **Next:** merge Min/Hein/Aryaan/Jai PRs as they land
 - **Branch:** main
-- **Updated:** 2026-10-24 14:05
+- **Updated:** 2026-10-24 15:10
 - **Log:** `DECISIONS.md`, `docs/MODEL-NOTES.md`
 
 ### @HeinHtet-Phyo

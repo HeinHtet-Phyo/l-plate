@@ -117,6 +117,7 @@ export class Session {
   private lastPublish = -Infinity;
   private lastPhoneState = -Infinity;
   private passedStep = -1;
+  private lastCollisionFault = -Infinity;
   private lastStepCheck = -Infinity;
   private distance = 0;
   private finished = false;
@@ -466,7 +467,9 @@ export class Session {
           break;
         case 'collision':
           this.toast(e.what === 'car' ? 'You hit a parked car!' : e.what === 'tree' ? 'You hit a tree!' : 'You hit a building!');
-          this.faults.collision(e.what, this.time, road);
+          // Pressing against the same obstacle is one fault, not one per bump.
+          if (this.time - this.lastCollisionFault > 6) this.faults.collision(e.what, this.time, road);
+          this.lastCollisionFault = this.time;
           break;
         case 'kerb':
           this.toast('You mounted the kerb!');
