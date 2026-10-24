@@ -24,22 +24,32 @@
 
 ## The idea
 
-- **One-liner:** TBD
-- **Who it's for / what problem:** TBD
-- **Why it matters:** TBD
-- **The one end-to-end demo path** (input, what happens, output): TBD
+- **Name:** L-Plate
+- **One-liner:** practise driving on real UK streets from your sofa, with an AI driving instructor in the passenger seat.
+- **Who it's for / what problem:** UK learner drivers. Lessons cost money, test slots are scarce, and learners can't rehearse a real test route between lessons.
+- **Why it matters:** you can rehearse the real roads around your test centre, and get feedback structured like the UK practical test (minor, serious and dangerous faults, each tied to a Highway Code rule).
+- **The one end-to-end demo path:** laptop opens the game and picks a real UK area, then shows a QR code. A phone scans it and becomes the controller (tilt to steer, buttons for accelerate and brake). The user drives a 3D car on real OSM roads while the AI instructor gives directions and coaching. At the end they get a mock-test report with PASS/FAIL.
 
 ## Scope
 
-- **Must have (the demo path):** TBD
-- **Nice to have:** TBD
-- **Out of scope today:** TBD
+Build order (the priority list):
+1. Phone-to-laptop steering via QR code + WebSocket (riskiest, first)
+2. Simple 3D road and car responding to the phone
+3. Real streets from OpenStreetMap (Overpass) for one cached demo area
+4. Event logging + AI end-of-drive report (faults + PASS/FAIL)
+5. Live instructor directions and coaching during the drive
+6. Open (Nebius) vs closed (OpenAI) comparison page + chart (feedback quality, cost, latency)
+7. Polish the UI for the demo
+
+- **Must have (the demo path):** steps 1 to 4
+- **Nice to have:** steps 5 to 7, Tavily lookups of Highway Code rules
+- **Out of scope today:** realistic physics, traffic and pedestrians, accounts
 
 ## Stack and architecture
 
-- **Language / framework:** TBD
-- **Models** (keep the IDs in one config constant, e.g. `config.py` / `config.ts`): TBD
-- **External APIs:** Nebius Token Factory; Tavily web search (if used)
+- **Language / framework:** JavaScript. React + Vite + Three.js (react-three-fiber) frontend, Node.js + `ws` relay server. Everything is in `app/`, which is one npm package.
+- **Models** (keep the IDs in one config constant, e.g. `config.py` / `config.ts`): TBD. A fast open model on Token Factory for the live instructor.
+- **External APIs:** Nebius Token Factory; OpenStreetMap Overpass; Tavily (optional, Highway Code rules); OpenAI (comparison page only)
 - **Env vars:** see `.env.example`
 - **Layout:** TBD (list the top-level folders as they appear)
 - **Run locally:** TBD

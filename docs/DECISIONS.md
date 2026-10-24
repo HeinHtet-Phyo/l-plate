@@ -36,3 +36,10 @@
 - **Alternatives:** keep the vendored copies and drop the plugin (loses updates, and everyone's settings already enable the plugin); keep the L-Plate text as is (misleading paths and rules).
 - **Affects:** anyone using Nebius beyond basic inference. Start at `nebius-corrections`. Don't vendor plugin skills into `.claude/skills/`.
 
+
+## 2026-10-24 12:50: Project is L-Plate, a driving-practice game with a phone as the controller (@HeinHtet-Phyo)
+- **Decision:** build L-Plate: a 3D drive on real UK streets (from OSM) in the laptop browser. The player steers by tilting their phone, which pairs with the laptop through a QR code and a WebSocket session. An open model on Token Factory acts as the driving instructor and writes a UK-style mock-test report. Stack: React + Vite + react-three-fiber, Node `ws` relay, all in `app/`.
+- **Why:** the purpose is clear and easy to demo, and judges can play it themselves. Fault reports and live coaching give a natural "where models struggle" story (made-up rules, wrong road names, wrong fault severity).
+- **Alternatives:** keyboard controls (less memorable); a native app (no time).
+- **Affects:** everyone. See `docs/PROJECT.md` for the build order.
+

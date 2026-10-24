@@ -4,11 +4,11 @@
 > **Edit only your own lane.** In the shared sections, change single lines; don't reorder or rewrite.
 > Keep this file under ~150 lines. Details belong in `docs/sessions/`.
 
-Last updated: 2026-10-24 11:57 by @minthantkyaw28
+Last updated: 2026-10-24 12:50 by @HeinHtet-Phyo
 
 ## Snapshot
 
-- **Idea:** not chosen yet. Decide it, then fill in `docs/PROJECT.md`.
+- **Idea:** L-Plate, a driving-practice game on real UK streets with an AI instructor. See `docs/PROJECT.md`.
 - **Works end-to-end:** nothing yet (no app code).
 - **Repo has:** the shared agent memory system (AGENTS.md, this board, `docs/`, `.claude/` commands, skills and hook),
   the Token Factory skill, the Nebius skills (start at `nebius-corrections`), the Tavily skills, and project plugins.
@@ -17,8 +17,10 @@ Last updated: 2026-10-24 11:57 by @minthantkyaw28
 ## Up next (unclaimed)
 
 <!-- To claim a task, move it into your lane and push right away (/claim). Add new tasks at the bottom. -->
-- [ ] Pick the project idea and fill in `docs/PROJECT.md` (idea, user, why it matters, demo path). Whole team, do it first.
-- [ ] Choose the stack and scaffold the app skeleton, with model IDs in one config constant.
+- [ ] L-Plate step 3: fetch one demo area's roads from OSM Overpass (names, maxspeed, junctions, roundabouts) and cache it as JSON in `app/public/areas/`.
+- [ ] L-Plate step 4: driving event logger + end-of-drive mock-test report via Token Factory (minor/serious/dangerous faults, PASS/FAIL, Highway Code rule per fault).
+- [ ] L-Plate step 5: live instructor directions and coaching during the drive.
+- [ ] L-Plate step 6: open (Nebius) vs closed (OpenAI) comparison page with a quality/cost/latency chart.
 - [ ] Everyone: put `NEBIUS_API_KEY` (and `TAVILY_API_KEY`) in `.env`, run the `/v1/models` check from the token-factory skill, and `uv tool install tavily-cli` (see README).
 - [ ] Build a small model-comparison harness for the "where models struggle" part of the demo (see token-factory skill).
 
@@ -41,12 +43,12 @@ Last updated: 2026-10-24 11:57 by @minthantkyaw28
 - **Log:** none
 
 ### @HeinHtet-Phyo
-- **Status:** not started
-- **Working on:** nothing
-- **Next:** nothing yet
-- **Branch:** none
-- **Updated:** never
-- **Log:** none
+- **Status:** in progress
+- **Working on:** L-Plate step 1: phone-to-laptop controller (QR pairing + WebSocket relay), in `app/`
+- **Next:** step 2, a simple 3D road and car driven by the phone
+- **Branch:** main
+- **Updated:** 2026-10-24 12:50
+- **Log:** none yet
 
 ### @Aryaan2303
 - **Status:** not started
