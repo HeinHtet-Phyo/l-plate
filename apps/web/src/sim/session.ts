@@ -134,6 +134,8 @@ export class Session {
   private listeners = new Set<() => void>();
   snapshot: HudSnapshot;
   debugExtra: Record<string, string | number> = {};
+  /** Map imagery credit (Google 3D Tiles), shown with the attribution. */
+  mapCredit: string | null = null;
 
   constructor(setup: SessionSetup) {
     this.setup = setup;

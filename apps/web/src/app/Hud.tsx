@@ -137,6 +137,7 @@ export function Hud({ session, gpu, host, onExit, onRestart, attribution, infill
       </div>
 
       <div className="attribution">
+        {session.mapCredit ? `${session.mapCredit} · ` : ''}
         {attribution}
         {infill ? ' · Houses filled in where OpenStreetMap has none mapped' : ''} · routes OSRM · weather Open-Meteo
       </div>

@@ -12,6 +12,11 @@ import type { HostLink } from '../net/pairing.ts';
 import { createAtmosphere, createCabin, createCity, createTraffic, partSources } from './parts.ts';
 import { Hud } from './Hud.tsx';
 import { loadTextureOverrides, mergeTextures, type TextureOverrides } from './textureImages.ts';
+import { createPostFx } from './postfx.ts';
+import { createGoogleTiles } from './googleTiles.ts';
+
+const QUERY = new URLSearchParams(location.search);
+const GOOGLE_KEY = (import.meta.env.VITE_GOOGLE_MAPS_BROWSER_KEY as string | undefined)?.trim() || '';
 import routesJson from '../routes/test-routes.json';
 import startsJson from '../routes/free-starts.json';
 
@@ -155,6 +160,20 @@ function DriveScene({ session, texOverrides, mirrors, dpr, setDpr, maxDpr }: { s
     };
   }, [session, gl]);
   const adaptive = useMemo(() => new AdaptiveDpr(dpr, maxDpr), []);
+  const fx = useMemo(() => (QUERY.get('fx') === '0' ? null : createPostFx(gl, scene, camera as THREE.PerspectiveCamera)), [gl, scene, camera]);
+  const tiles = useMemo(() => (GOOGLE_KEY && QUERY.get('tiles') !== '0' ? createGoogleTiles(session, GOOGLE_KEY) : null), [session]);
+  useEffect(() => {
+    fx?.setSize(size.width, size.height);
+  }, [fx, size.width, size.height, dpr]);
+  useEffect(() => {
+    if (!tiles) return;
+    scene.add(tiles.object);
+    return () => {
+      scene.remove(tiles.object);
+      tiles.dispose();
+    };
+  }, [tiles]);
+  useEffect(() => () => fx?.dispose(), [fx]);
   const frame = useRef(0);
 
   useEffect(() => {
@@ -194,12 +213,23 @@ function DriveScene({ session, texOverrides, mirrors, dpr, setDpr, maxDpr }: { s
     parts.atmosphere.update(session, dt);
     parts.atmosphere.apply(scene, gl);
     parts.cabin.update(session, dt, cam);
+    if (tiles) {
+      tiles.update(session, cam, gl, parts.city.object);
+      session.mapCredit = tiles.credits() || null;
+      session.debugExtra.tiles = tiles.status();
+    }
+    if (fx) fx.update(session, cam);
     if (mirrors) parts.cabin.renderMirrors(gl, scene, frame.current++);
 
-    gl.autoClear = false;
     gl.setRenderTarget(null);
-    gl.clear();
-    gl.render(scene, cam);
+    if (fx) {
+      fx.render(dt); // world pass with god rays, bloom and tone mapping
+    } else {
+      gl.autoClear = false;
+      gl.clear();
+      gl.render(scene, cam);
+    }
+    gl.autoClear = false;
     gl.clearDepth();
     gl.render(parts.cabin.scene, parts.cabin.camera);
 

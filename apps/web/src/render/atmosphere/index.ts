@@ -141,7 +141,8 @@ export function createAtmosphere(s: Session): RenderPart & { apply(scene: THREE.
   let weatherInFlight = false;
   const { lat, lng } = s.setup.start;
   function refreshWeather() {
-    if (weatherInFlight) return;
+    // A chosen preset (?weather=…) wins over live weather.
+    if (weatherInFlight || s.conditions.source === 'preset') return;
     weatherInFlight = true;
     fetchOpenMeteo(lat, lng)
       .then((c) => {

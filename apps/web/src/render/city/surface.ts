@@ -22,6 +22,7 @@ void main() {
 const FRAG = /* glsl */ `
 ${CITY_FRAG_PARS}
 uniform sampler2D uGrid;    // R carriageway, G pavement, B building (0..1 coverage)
+uniform float uRoadOnly;    // 1 when Google 3D Tiles supply everything but the road (app/googleTiles.ts)
 uniform sampler2D uLand;    // R grass, G water, B wood
 uniform sampler2D uAsphalt;
 uniform sampler2D uPaving;
@@ -73,6 +74,7 @@ void main() {
   vec4 gm = texture2D(uGrid, guv);
   float farMix = smoothstep(1.0, 3.0, foot / cell);
   vec2 cp = mix(g0.rg, gm.rg, farMix) * inside;
+  if (uRoadOnly > 0.5 && g0.r < 0.5 && g0.g < 0.5) discard;
   float c = cp.x;
   float p = cp.y;
   float bNear = textureLod(uGrid, guv, 2.0).b * inside;
@@ -268,6 +270,7 @@ export function buildSurface(s: Session, tex: TextureSet): CityPiece {
     fragmentShader: FRAG,
     uniforms: {
       uGrid: { value: gridTex },
+      uRoadOnly: { value: 0 },
       uLand: { value: landTex },
       uAsphalt: { value: tex.asphalt },
       uPaving: { value: tex.paving },
