@@ -4,7 +4,7 @@
 > **Edit only your own lane.** In the shared sections, change single lines; don't reorder or rewrite.
 > Keep this file under ~150 lines. Details belong in `docs/sessions/`.
 
-Last updated: 2026-10-24 14:23 by @minthantkyaw28
+Last updated: 2026-10-24 14:28 by @jai-matharu
 
 ## Snapshot
 
@@ -61,12 +61,12 @@ Last updated: 2026-10-24 14:23 by @minthantkyaw28
 - **Log:** `docs/sessions/2026-10-24-1420-Aryaan2303-atmosphere-traffic.md`
 
 ### @jai-matharu
-- **Status:** not started
-- **Working on:** nothing
-- **Next:** nothing yet
-- **Branch:** none
-- **Updated:** never
-- **Log:** none
+- **Status:** in progress. Done: typecheck clean; Vitest 85 web + 44 server tests (`pnpm test`); `scripts/scan-secrets.ts`; `scripts/build-rules.ts` + `apps/server/data/highway-code.json` (307 rules); README; first headless Goodmayes check passed (M1 GPU, Sam speaking). **Merged into `main`** by @christopherwhite06 (typecheck clean, 129 tests pass, scan-secrets clean).
+- **Working on:** PR #2 (§5). Belvedere refetch skipped by decision (extract still empty; don't demo that route)
+- **Next:** final §21 headless checks + screenshots in the last 30 min. Known bug for sim owner: `friendlyGpuName` splits on commas inside "(radeonsi, …)" (test marked `.fails`).
+- **Branch:** jai (PR into main)
+- **Updated:** 2026-10-24 14:28
+- **Log:** `docs/MODEL_FAILURES.md` (Sam "Good morning" at 14:11; weak short-query retrieval; Token Factory 503 outage 14:27)
 
 ## Blockers / questions for the humans
 

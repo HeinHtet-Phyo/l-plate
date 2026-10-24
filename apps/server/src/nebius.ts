@@ -45,7 +45,8 @@ export function createNebius(opts: NebiusClientOptions) {
         continue;
       }
       if (res.ok) return (await res.json()) as T;
-      const detail = (await res.text().catch(() => '')).slice(0, 300);
+      // Gateways answer with HTML error pages; keep only the text.
+      const detail = (await res.text().catch(() => '')).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 300);
       if (res.status === 401) throw new NebiusError(401, 'Nebius rejected the API key (401). Check NEBIUS_API_KEY.');
       if (res.status === 402) throw new NebiusError(402, 'Nebius account is out of credit (402). Top up in Token Factory.');
       lastErr = new NebiusError(res.status, `Nebius HTTP ${res.status}: ${detail}`);

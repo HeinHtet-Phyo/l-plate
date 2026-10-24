@@ -80,3 +80,30 @@
 - **Workaround:** none needed; replies aren't streamed.
 - **Demo-worthy:** maybe (shows the fast open model is good enough live). Logged by @christopherwhite06 in `docs/MODEL-NOTES.md`; copied here by @minthantkyaw28 so the demo-prep skill finds it.
 
+
+## 2026-10-24 14:11: Qwen/Qwen3-30B-A3B-Instruct-2507: Sam says "Good morning" in the afternoon (@jai-matharu)
+- **Task:** Sam's first line on the Goodmayes route (`/api/instructor`), in a headless Chrome run of `?route=goodmayes`.
+- **Expected:** a greeting plus the first direction.
+- **Got:** "Good morning. In about a hundred yards, you'll need to turn left onto Granton Road." at 14:11 London time. The direction
+  was correct (it matches the sat nav); the time of day was invented, because the status line in the prompt has no clock.
+- **How often:** 1/1 run.
+- **Workaround:** add the London time of day to the status line in `buildInstructorMessages`, or tell Sam not to greet by time of day.
+- **Demo-worthy:** yes. Small but visible: the model fills a gap in its context with a confident guess.
+
+## 2026-10-24 14:25: Qwen/Qwen3-Embedding-8B: "two second rule" retrieves the wrong Highway Code rule first (@jai-matharu)
+- **Task:** cosine search over the 307 embedded Highway Code rules (`pnpm build:rules`, `searchRules` with no rerank model).
+- **Expected:** rule 126 (stopping distances, "at least a two-second gap") first.
+- **Got:** 156 (country roads, 0.556), then 126 (0.524), then 66 (0.511). Longer questions work well: "who has priority at a roundabout"
+  → 185, 186, 189; "can I park on the zig-zag lines at a zebra crossing" → 191, 240, 195.
+- **How often:** 1/3 test queries; short, jargon-like queries are the weak spot.
+- **Workaround:** set `NEBIUS_MODEL_RERANK` so `/rerank` reorders the cosine top 20, or expand short queries before embedding.
+- **Demo-worthy:** yes. It shows why the examiner may only cite rules that retrieval actually returned.
+
+## 2026-10-24 14:27: Token Factory: HTTP 503 from nginx on every endpoint (@jai-matharu)
+- **Task:** `/v1/embeddings` (`Qwen/Qwen3-Embedding-8B`) for `/api/rules/search`, then `/v1/chat/completions` (`Qwen/Qwen3-30B-A3B-Instruct-2507`) to compare.
+- **Expected:** 200 (both worked minutes earlier: 307 embeddings at 14:20, Sam speaking at 14:11).
+- **Got:** `503 Service Temporarily Unavailable` as an nginx HTML page, on embeddings and chat, 3/3 tries over ~10 s and after the client's 3 backoff retries.
+- **How often:** every call in a ~1 minute window.
+- **Workaround:** the server never depends on Nebius for the drive: rule search failures return `[]`, `/api/debrief` falls back to the
+  rule-based examiner (`source: "offline"`), and `/api/rules/search` now returns a clean 502 instead of the HTML page. Error details are stripped of HTML.
+- **Demo-worthy:** yes. Shared serverless inference can vanish mid-demo; graceful fallback is part of the product.

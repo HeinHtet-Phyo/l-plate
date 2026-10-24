@@ -22,6 +22,11 @@ export function loadRules(file = new URL('../data/highway-code.json', import.met
   return cache;
 }
 
+/** Test hook: swap in an in-memory rules db, or pass nothing to clear the cache so the next load re-reads disk. */
+export function setRules(db?: typeof cache): void {
+  cache = db;
+}
+
 export function cosine(a: number[], b: number[]): number {
   let d = 0;
   let na = 0;
