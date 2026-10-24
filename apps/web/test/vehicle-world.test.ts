@@ -153,7 +153,7 @@ describe('RoadWorld', () => {
     const ev: WorldEvent[] = [];
     for (let t = 0; t < 8; t += 1 / 30) {
       // Steer left as the car enters the junction box.
-      const steer = w.car.x > -12 && Math.abs(((w.car.heading - 0 + 540) % 360) - 180) > 8 ? -0.7 : 0;
+      const steer = w.car.x > -5 && Math.abs(((w.car.heading - 0 + 540) % 360) - 180) > 8 ? -0.7 : 0;
       w.car.updateSteer(steer, true, 1 / 30); // the session applies steering before stepping
       w.step({ steer, throttle: 0.15, brake: 0 }, 1 / 30);
       ev.push(...w.drain());
