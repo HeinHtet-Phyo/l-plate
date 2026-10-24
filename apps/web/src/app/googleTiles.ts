@@ -48,22 +48,30 @@ export function createGoogleTiles(s: Session, key: string): GoogleTiles {
   const ray = new THREE.Raycaster();
   const down = new THREE.Vector3(0, -1, 0);
 
-  /** Ground height of the photogrammetry under a few points along the road near the car. */
+  /**
+   * Ground height of the photogrammetry around the car: a 3×3 grid on the road, taking the LOWEST
+   * hit, because rays from above often land on tree canopies or Google's baked-in parked cars.
+   */
   function probe(s: Session): number | null {
     const car = s.world.car;
-    const hs: number[] = [];
-    for (const d of [0, 6, 12, -6]) {
-      const h = car.heading * DEG;
-      const x = car.x + Math.sin(h) * d;
-      const z = car.z - Math.cos(h) * d;
-      ray.set(new THREE.Vector3(x, 2000, z), down);
-      ray.far = 4000;
-      const hit = ray.intersectObject(tiles.group, true)[0];
-      if (hit) hs.push(hit.point.y);
+    const [cx, cz] = car.centre();
+    const h = car.heading * DEG;
+    const fx = Math.sin(h);
+    const fz = -Math.cos(h);
+    let low = Infinity;
+    let hits = 0;
+    for (const d of [-4, 0, 4]) {
+      for (const l of [-1.5, 0, 1.5]) {
+        ray.set(new THREE.Vector3(cx + fx * d - fz * l, 2000, cz + fz * d + fx * l), down);
+        ray.far = 4000;
+        const hit = ray.intersectObject(tiles.group, true)[0];
+        if (hit) {
+          hits++;
+          low = Math.min(low, hit.point.y);
+        }
+      }
     }
-    if (hs.length < 2) return null;
-    hs.sort((a, b) => a - b);
-    return hs[Math.floor(hs.length / 2)];
+    return hits >= 3 ? low : null;
   }
 
   return {
@@ -74,14 +82,16 @@ export function createGoogleTiles(s: Session, key: string): GoogleTiles {
       camera.updateMatrixWorld();
       root.updateMatrixWorld(true);
       tiles.update();
-      // Align the tiles' ground to our road plane (y = 0) once tiles under the car have loaded,
-      // then refine slowly as the car moves (the photogrammetry ground isn't perfectly flat).
-      if (s.time - lastProbe > (aligned ? 3 : 0.5) && loaded > 0) {
+      // Align the tiles' ground to our road plane (y = 0) once detailed tiles under the car have
+      // loaded, then allow only small corrections (≤ 0.3 m each, ignoring readings > 3 m off).
+      const ready = loaded > 60 || s.time > 8;
+      if (ready && s.time - lastProbe > (aligned ? 2 : 0.5)) {
         lastProbe = s.time;
         const g = probe(s);
         if (g != null) {
           const target = offset - g - SINK;
-          offset = aligned ? offset + (target - offset) * 0.3 : target;
+          if (!aligned) offset = target;
+          else if (Math.abs(target - offset) <= 3) offset += THREE.MathUtils.clamp(target - offset, -0.3, 0.3);
           root.position.y = offset;
           aligned = true;
         }
@@ -100,7 +110,8 @@ export function createGoogleTiles(s: Session, key: string): GoogleTiles {
     credits() {
       if (!aligned) return '';
       const a = tiles.getAttributions().filter((x) => x.type === 'string').map((x) => String(x.value));
-      return a.length ? `Google · ${a.join('; ')}` : 'Google';
+      const rest = [...new Set(a.flatMap((x) => x.split(/[;,]\s*/)))].filter((x) => x && x !== 'Google');
+      return rest.length ? `Google · ${rest.join(', ')}` : 'Google';
     },
     status() {
       if (error) return `error: ${error.slice(0, 80)}`;
