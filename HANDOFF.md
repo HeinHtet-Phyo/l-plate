@@ -45,11 +45,11 @@ Last updated: 2026-10-24 14:28 by @jai-matharu
 - **Log:** `DECISIONS.md`, `docs/MODEL-NOTES.md`
 
 ### @HeinHtet-Phyo
-- **Status:** phone page and cabin done; **merged into `main`** by @christopherwhite06 (picked up automatically via `app/parts.ts` and `main.tsx`).
-- **Working on:** nothing; ready for integration
-- **Next:** Chris: (1) lazy-load `apps/web/src/phone/PhonePage.tsx` (default export) for `/c/*`; (2) `import { createCabin } from './render/cabin/index.ts'` and follow the TEAM-PLAN render loop (`cabin.update(s, dt, worldCam)`, `cabin.renderMirrors(gl, scene, frame)`, then a second pass after `clearDepth`). Merge `hein` into `main`, or tell me to open a PR. Optional: Google map overlay (§11).
+- **Status:** in progress. Following `splat.md`: Elephant & Castle Gaussian splat (Panoramax CC BY-SA photos, pycolmap SfM, Brush on Apple M5, Spark renderer). Earlier: phone page, cabin, model referee merged into `main`.
+- **Working on:** splat data/training (`~/lplate-splat/elephant/`) and app wiring (`apps/web/src/app/splat.ts`, `Drive.tsx`, `sim/session.ts`). Chris: heads-up, touching `apps/web/src/app/`.
+- **Next:** drive `?start=elephant-splat`, push to `hein`, tell Chris to pull.
 - **Branch:** `hein`
-- **Updated:** 2026-10-24 14:05
+- **Updated:** 2026-10-24 15:20
 - **Log:** `docs/sessions/2026-10-24-1325-HeinHtet-Phyo-phone-controller.md`
 
 ### @Aryaan2303
