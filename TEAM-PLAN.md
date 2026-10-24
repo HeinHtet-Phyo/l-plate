@@ -9,11 +9,11 @@ The spec is in `docs/SPEC.md`. The **§ numbers** below refer to it. Read your s
 |---|---|---|---|
 | 1 | **Chris** | App shell, render loop, HUD, menu, integration | `apps/web/src/main.tsx`, `apps/web/src/app/**`, `apps/web/src/sim/session.ts` |
 | 2 | **Min** | The city: roads, markings, buildings, trees, parked cars, streetlights, signals | `apps/web/src/render/city/**`, `apps/web/src/render/textures.ts` |
-| 3 | **Hein** | Cabin, mirrors, sat nav screen, windscreen rain | `apps/web/src/render/cabin/**` |
-| 4 | **Aryaan** | Sky, lights, weather, night, AI-traffic meshes, phone page | `apps/web/src/render/atmosphere/**`, `apps/web/src/render/traffic/**`, `apps/web/src/phone/**` |
+| 3 | **Hein** | Phone controller page (already claimed), then cabin, mirrors, sat nav screen, windscreen rain | `apps/web/src/phone/**`, `apps/web/src/render/cabin/**` |
+| 4 | **Aryaan** | Sky, lights, weather, night, AI-traffic meshes | `apps/web/src/render/atmosphere/**`, `apps/web/src/render/traffic/**` |
 | 5 | **Jai** | Tests, typecheck/build fixes, server extras, data, README, verification | `**/test/**`, `scripts/**`, `apps/server/**`, `README.md` |
 
-Only touch files you own. If you need a change in someone else's file, message them (or Chris for `session.ts`). Work on a branch `feat/<area>` and open small PRs into `main` often; Chris merges.
+Note: the app lives in `apps/web` + `apps/server` (pnpm workspace), not `app/`. Only touch files you own. If you need a change in someone else's file, message them (or Chris for `session.ts`). Work on a branch `feat/<area>` and open small PRs into `main` often; Chris merges.
 
 ---
 
@@ -144,7 +144,19 @@ Build `render/city/index.ts` → `createCity(s, tex)`:
 
 **Done when** Goodmayes looks like a London street: brick houses (including infill), parked cars, lights and markings.
 
-## 3. Hein: cabin, mirrors, sat nav screen (§8, §9, §11)
+## 3. Hein: phone controller, then cabin, mirrors, sat nav screen (§8, §9, §11, §12)
+
+**Phone first (you already claimed it).** Build it inside this workspace, not in a separate `app/` folder.
+- **Where:** `apps/web/src/phone/PhonePage.tsx`, served at `/c/:session?t=…`.
+- **Already done:** the relay (`apps/server/src/relay.ts`, `POST /api/pair`, `GET /ws`), the host side (`apps/web/src/net/pairing.ts`) and the tilt maths (`apps/web/src/phone/tilt.ts`).
+- **Still to do:** the page itself:
+  - landscape wheel, analogue pedals, indicator stalks that blink with the car
+  - handbrake, recover and recentre buttons
+  - the iOS `DeviceOrientationEvent.requestPermission()` tap, and touch-drag steering as the fallback
+  - WebSocket `role=controller`, sending `controls` at ~30 Hz plus `sensor` status
+- **Message types:** `ControllerMessage` and `HostMessage` in `packages/shared/src/index.ts`.
+
+Then the cabin:
 
 Build `render/cabin/index.ts` → `createCabin(s)`:
 
@@ -162,7 +174,7 @@ Build `render/cabin/index.ts` → `createCabin(s)`:
 - **Windscreen rain** (§8): shader drops plus two wipers sweeping every 1.4 s while `s.conditions.rain > 0`.
 - **Optional, last:** the Google map overlay (§11) with the matrix3d homography, which is already in `sim/geo.ts` as `quadMatrix3d`.
 
-## 4. Aryaan: atmosphere, traffic meshes, phone (§10, §12, §13)
+## 4. Aryaan: atmosphere and traffic meshes (§10, §13)
 
 1. **First 10 minutes:** commit the `render/atmosphere/uniforms.ts` stub above.
 2. **`createAtmosphere(s)`** (§13):
@@ -174,12 +186,6 @@ Build `render/cabin/index.ts` → `createCabin(s)`:
 3. **Live weather:** `fetchOpenMeteo` and the presets are already in `sim/conditions.ts`. Refresh every 10 minutes and write into `s.conditions`.
 4. **`createTraffic(s)`:** instanced car bodies, glass and wheels for up to 130 cars from `s.traffic.cars` (`rx`, `rz`, `rh`). Brake lights come on when `braking`; headlights and tail lights glow at night.
 5. **Optional:** live Google traffic, via `Traffic.applySpeedBands` (already written).
-6. **Phone page** (§12): `src/phone/PhonePage.tsx` at `/c/:session?t=…`.
-   - landscape wheel, analogue pedals, indicator stalks, handbrake / recover / recentre buttons
-   - tilt maths: `phone/tilt.ts`, already written
-   - the iOS permission tap, and touch-drag fallback steering
-   - WebSocket `role=controller`, sending controls at ~30 Hz
-   - The host side is in `net/pairing.ts`, already written.
 
 ## 5. Jai: tests, build, server extras, data, docs (§17, §19, §21)
 
