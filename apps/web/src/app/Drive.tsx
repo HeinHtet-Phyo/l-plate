@@ -14,6 +14,7 @@ import { Hud } from './Hud.tsx';
 import { loadTextureOverrides, mergeTextures, type TextureOverrides } from './textureImages.ts';
 import { createPostFx } from './postfx.ts';
 import { createGoogleTiles } from './googleTiles.ts';
+import { drapeObject } from './terrain.ts';
 
 const QUERY = new URLSearchParams(location.search);
 const GOOGLE_KEY = (import.meta.env.VITE_GOOGLE_MAPS_BROWSER_KEY as string | undefined)?.trim() || '';
@@ -44,7 +45,9 @@ export function Drive(props: DriveProps) {
   const [progress, setProgress] = useState('Loading map data…');
   const [error, setError] = useState<string | null>(null);
   const maxDpr = Math.min(2, window.devicePixelRatio || 1);
-  const [dpr, setDpr] = useState(props.gpu.software ? Math.min(1, maxDpr) : Math.min(1.5, maxDpr));
+  // Max quality by default (full device pixel ratio, no adaptive drops); ?quality=low restores adaptive resolution.
+  const lowQuality = QUERY.get('quality') === 'low';
+  const [dpr, setDpr] = useState(props.gpu.software ? Math.min(1, maxDpr) : lowQuality ? Math.min(1.5, maxDpr) : maxDpr);
   const started = useRef(false);
   const route = props.kind === 'route' ? ROUTES.find((r) => r.id === props.id) : undefined;
   const start = props.kind === 'route' ? route?.start : STARTS.find((s) => s.id === props.id);
@@ -131,7 +134,7 @@ export function Drive(props: DriveProps) {
             gl.outputColorSpace = THREE.SRGBColorSpace;
           }}
         >
-          <DriveScene session={session} texOverrides={texOverrides} mirrors={props.mirrors} dpr={dpr} setDpr={setDpr} maxDpr={props.gpu.software ? 1 : maxDpr} />
+          <DriveScene session={session} texOverrides={texOverrides} mirrors={props.mirrors} dpr={dpr} setDpr={lowQuality || props.gpu.software ? setDpr : () => {}} maxDpr={props.gpu.software ? 1 : maxDpr} />
         </Canvas>
       )}
       {session ? (
@@ -170,6 +173,9 @@ function DriveScene({ session, texOverrides, mirrors, dpr, setDpr, maxDpr }: { s
   useEffect(() => {
     if (!tiles) return;
     scene.add(tiles.object);
+    // Our road, markings, cars and props follow the Google terrain instead of a flat plane.
+    drapeObject(parts.city.object);
+    drapeObject(parts.traffic.object);
     return () => {
       scene.remove(tiles.object);
       tiles.dispose();
@@ -192,8 +198,15 @@ function DriveScene({ session, texOverrides, mirrors, dpr, setDpr, maxDpr }: { s
   }, [parts]);
 
   useFrame((_state, delta) => {
+    // Fixed sim steps of ≤ 50 ms; on slow frames take several, so driving runs at real speed
+    // even when max-quality graphics bring the frame rate down.
     const dt = Math.min(0.05, delta);
-    session.step(dt);
+    let rem = Math.min(0.25, delta);
+    while (rem > 1e-4) {
+      const step = Math.min(0.05, rem);
+      session.step(step);
+      rem -= step;
+    }
     const cam = camera as THREE.PerspectiveCamera;
     const car = session.world.car;
     // Horizontal FOV ≈ 100°; vertical from the aspect ratio.
@@ -205,7 +218,7 @@ function DriveScene({ session, texOverrides, mirrors, dpr, setDpr, maxDpr }: { s
       cam.updateProjectionMatrix();
     }
     const rumble = Math.min(1, car.speed / 20) * 0.004 * Math.sin(session.time * 37) ;
-    cam.position.set(car.x, 1.2 + session.world.bodyRise + session.spring.y * 0.08 + rumble, car.z);
+    cam.position.set(car.x, 1.2 + (tiles?.ground() ?? 0) + session.world.bodyRise + session.spring.y * 0.08 + rumble, car.z);
     cam.rotation.order = 'YXZ';
     cam.rotation.set(session.pitch, -car.heading * DEG, 0);
     cam.updateMatrixWorld();
@@ -216,7 +229,7 @@ function DriveScene({ session, texOverrides, mirrors, dpr, setDpr, maxDpr }: { s
     parts.atmosphere.apply(scene, gl);
     parts.cabin.update(session, dt, cam);
     if (tiles) {
-      tiles.update(session, cam, gl, parts.city.object);
+      tiles.update(session, cam, gl, parts.city.object, scene);
       session.mapCredit = tiles.credits() || null;
       session.debugExtra.tiles = tiles.status();
     }
