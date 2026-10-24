@@ -4,7 +4,7 @@
 > **Edit only your own lane.** In the shared sections, change single lines; don't reorder or rewrite.
 > Keep this file under ~150 lines. Details belong in `docs/sessions/`.
 
-Last updated: 2026-10-24 14:05 by @christopherwhite06
+Last updated: 2026-10-24 13:58 by @minthantkyaw28
 
 ## Snapshot
 
@@ -29,11 +29,11 @@ Last updated: 2026-10-24 14:05 by @christopherwhite06
 ## Lanes
 
 ### @minthantkyaw28
-- **Status:** done. Agent memory system, Tavily and Nebius skills, live key tests, and made it all agent-agnostic (Claude Code, Cursor, Codex).
-- **Working on:** nothing
-- **Next:** pick a task from Up next
-- **Branch:** main
-- **Updated:** 2026-10-24 12:57
+- **Status:** in progress
+- **Working on:** TEAM-PLAN §2, the city renderer: `createCity(s, tex)` in `apps/web/src/render/city/**` (road surface shader, markings, buildings, trees, parked cars, streetlights, traffic lights, Belisha beacons) + `render/textures.ts`
+- **Next:** PR `feat/city` into main for Chris to merge; Goodmayes should look like a London street
+- **Branch:** feat/city
+- **Updated:** 2026-10-24 13:58
 - **Log:** `docs/sessions/2026-10-24-1133-minthantkyaw28-agent-memory-system.md`
 
 ### @christopherwhite06
