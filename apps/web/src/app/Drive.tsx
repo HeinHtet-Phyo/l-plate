@@ -161,7 +161,9 @@ function DriveScene({ session, texOverrides, mirrors, dpr, setDpr, maxDpr }: { s
   }, [session, gl]);
   const adaptive = useMemo(() => new AdaptiveDpr(dpr, maxDpr), []);
   const fx = useMemo(() => (QUERY.get('fx') === '0' ? null : createPostFx(gl, scene, camera as THREE.PerspectiveCamera)), [gl, scene, camera]);
-  const tiles = useMemo(() => (GOOGLE_KEY && QUERY.get('tiles') !== '0' ? createGoogleTiles(session, GOOGLE_KEY) : null), [session]);
+  // Google 3D Tiles are on for Goodmayes (the demo route) to keep Map Tiles costs down; ?tiles=1 forces them elsewhere.
+  const tilesWanted = QUERY.get('tiles') === '1' || (QUERY.get('tiles') !== '0' && session.setup.id === 'goodmayes');
+  const tiles = useMemo(() => (GOOGLE_KEY && tilesWanted ? createGoogleTiles(session, GOOGLE_KEY) : null), [session]);
   useEffect(() => {
     fx?.setSize(size.width, size.height);
   }, [fx, size.width, size.height, dpr]);

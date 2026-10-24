@@ -29,7 +29,8 @@ export function createGoogleTiles(s: Session, key: string): GoogleTiles {
   tiles.registerPlugin(new GoogleCloudAuthPlugin({ apiToken: key, autoRefreshToken: true }));
   tiles.registerPlugin(new ReorientationPlugin({ lat: s.ex.origin.lat * DEG, lon: s.ex.origin.lng * DEG, height: 0, up: '+y', recenter: true }));
   tiles.registerPlugin(new TilesFadePlugin());
-  tiles.errorTarget = 12;
+  // Lower = sharper. Street level needs the detailed tiles; Goodmayes is small enough to afford it.
+  tiles.errorTarget = 6;
   root.add(tiles.group);
 
   let aligned = false;
