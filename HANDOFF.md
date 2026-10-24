@@ -45,11 +45,11 @@ Last updated: 2026-10-24 13:58 by @minthantkyaw28
 - **Log:** `DECISIONS.md`, `docs/MODEL-NOTES.md`
 
 ### @HeinHtet-Phyo
-- **Status:** phone controller page done and tested end to end against the real relay (headless Chrome). Not yet wired into `main.tsx` (Chris owns it).
-- **Working on:** cabin (`apps/web/src/render/cabin/`), TEAM-PLAN §3
-- **Next:** Chris: in `main.tsx`, lazy-load `apps/web/src/phone/PhonePage.tsx` (default export) for paths starting `/c/`. Then test on a real phone through ngrok (iPhone tilt needs HTTPS).
+- **Status:** phone page and cabin done on branch `hein`, typechecked and rendered on Goodmayes (sunny, rain, night) with a local harness. Not in `main` yet.
+- **Working on:** nothing; ready for integration
+- **Next:** Chris: (1) lazy-load `apps/web/src/phone/PhonePage.tsx` (default export) for `/c/*`; (2) `import { createCabin } from './render/cabin/index.ts'` and follow the TEAM-PLAN render loop (`cabin.update(s, dt, worldCam)`, `cabin.renderMirrors(gl, scene, frame)`, then a second pass after `clearDepth`). Merge `hein` into `main`, or tell me to open a PR. Optional: Google map overlay (§11).
 - **Branch:** `hein`
-- **Updated:** 2026-10-24 13:25
+- **Updated:** 2026-10-24 14:05
 - **Log:** `docs/sessions/2026-10-24-1325-HeinHtet-Phyo-phone-controller.md`
 
 ### @Aryaan2303

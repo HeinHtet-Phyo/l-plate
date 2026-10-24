@@ -29,3 +29,16 @@ Ran the real server (`PORT=8090`) and web (`SERVER_PORT=8090`). Then Playwright 
 
 ## Next
 - Cabin: `apps/web/src/render/cabin/index.ts` → `createCabin(s)` (TEAM-PLAN §3).
+
+## Update 14:05: the cabin (TEAM-PLAN §3)
+`apps/web/src/render/cabin/`. `index.ts` exports `createCabin(s): CabinPart` (the contract in `render/types.ts`). Built in parallel by sub-agents against a shared `layout.ts`:
+- `layout.ts`: the eye-relative frame (origin = eye, −z forward, RHD so the car centre line is x = −0.37) and every position: windscreen, dash, bonnet, wheel, cluster, sat nav, mirrors, wipers.
+- `interior.ts`: dash with a binnacle recess, A-pillars, roof, visor, doors, crowned red bonnet. The steering wheel turns by `-car.steeringWheelAngle()`. About 7 draw calls.
+- `cluster.ts`: canvas speedo, rev counter (fake 6-speed auto), digital mph, gear, indicator arrows, handbrake light. Redraws only on change.
+- `satnav.ts`: 768×360 canvas. Manoeuvre and roundabout icons, distance, instruction and "then" bar, ETA and miles left, heading-up route map. Amber when off route or rerouting; free drive shows road, limit and clock.
+- `mirrors.ts`: rear-view plus two door mirrors. Half-float 4× MSAA targets, flipped with repeat (−1, 1) and offset (1, 0), one mirror per frame, `?mirrors=0` turns them off. The glass is `toneMapped: true` so the mirrors match the windscreen view (targets hold linear HDR).
+- `rain.ts`: shader raindrops on the windscreen, and two wipers sweeping every 1.4 s that clear the drops in their sector.
+- `index.ts`: the cabin's own hemisphere and sun lights, dimmed by `conditions.daylight` and `cloud`. It copies the world camera's fov and aspect, and pitch comes from `s.pitch`.
+
+Verified: `tsc --noEmit` is clean for all of `apps/web`. I rendered Goodmayes in Chrome through a local harness (uncommitted `src/main.tsx`: placeholder road ribbons and boxes for the world, the TEAM-PLAN render loop order, `?preset=` and `?auto=1`) at sunny, rain and night. All parts were visible and lined up, with no console errors.
+Known limits: the left door mirror sits about 66° left, outside a 100° horizontal FOV (as in a real RHD car, you'd turn your head). The digital mph is partly hidden by the wheel hub.
