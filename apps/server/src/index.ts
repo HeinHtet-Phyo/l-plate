@@ -127,7 +127,7 @@ export function buildApp() {
 function lanUrls(): string[] {
   const out: string[] = [];
   for (const list of Object.values(networkInterfaces())) {
-    for (const i of list ?? []) if (i.family === 'IPv4' && !i.internal) out.push(`http://${i.address}:5173`);
+    for (const i of list ?? []) if (i.family === 'IPv4' && !i.internal) out.push(`http://${i.address}:${process.env.WEB_PORT ?? 5173}`);
   }
   return out;
 }
