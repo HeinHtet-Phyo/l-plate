@@ -13,6 +13,7 @@
     "build:routes": "node scripts/build-routes.ts",
     "osm:fetch": "node scripts/osm-fetch.ts",
     "build:rules": "node scripts/build-rules.ts",
+    "textures:generate": "node --env-file-if-exists=.env --env-file-if-exists=apps/server/.env scripts/textures-generate.ts",
     "scan-secrets": "node scripts/scan-secrets.ts"
   },
   "devDependencies": {

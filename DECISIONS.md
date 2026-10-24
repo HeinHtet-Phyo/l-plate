@@ -1,7 +1,7 @@
 # Decisions (choices the build prompt left open)
 
 - **Models (from `/v1/models?verbose=true`, 2026-10-24):** no `-fast` flavours are listed. Instructor: `Qwen/Qwen3-30B-A3B-Instruct-2507` (non-reasoning, 0.4–0.5 s full reply, so replies aren't streamed). Examiner: `Qwen/Qwen3-235B-A22B-Instruct-2507` (supports `structured_outputs`). Embeddings: `Qwen/Qwen3-Embedding-8B`.
-- **Nebius textures:** skipped. No model with `text->image` modality is listed.
+- **Generated textures (overrides the spec's no-Gemini rule, at Chris's request, 2026-10-24):** Nebius lists no `text->image` model, so `pnpm textures:generate` uses a Gemini image model (`gemini-3.1-flash-image`, `GEMINI_API_KEY` in the gitignored root `.env`) offline only. Every image is reviewed by a Nebius vision model (`Qwen/Qwen3.8-27B`, JSON verdict) and regenerated up to 4 times. Outputs are committed under `apps/web/public/textures/`; the app has no Gemini code or dependency at runtime and falls back to procedural textures. First run blocked: the Gemini billing account hit its monthly spending cap.
 - **Privacy:** Token Factory stores prompts and outputs by default. Switch on Zero Data Retention for the organisation before sending real learner data. No names are sent in prompts.
 - **Debrief:** the server recomputes pass/fail with the DVSA rule and strips Highway Code rule numbers that weren't retrieved (see docs/MODEL-NOTES.md).
 - **Faults:** red lights (serious) and collisions (dangerous) are logged as faults as well as the four in §14.1.

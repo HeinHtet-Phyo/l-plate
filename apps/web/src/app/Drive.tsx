@@ -11,6 +11,7 @@ import { makeTextures } from '../render/textures.ts';
 import type { HostLink } from '../net/pairing.ts';
 import { createAtmosphere, createCabin, createCity, createTraffic, partSources } from './parts.ts';
 import { Hud } from './Hud.tsx';
+import { loadTextureOverrides, mergeTextures, type TextureOverrides } from './textureImages.ts';
 import routesJson from '../routes/test-routes.json';
 import startsJson from '../routes/free-starts.json';
 
@@ -34,6 +35,7 @@ export interface DriveProps {
 
 export function Drive(props: DriveProps) {
   const [session, setSession] = useState<Session | null>(null);
+  const [texOverrides, setTexOverrides] = useState<TextureOverrides>({ upper: {}, ground: {} });
   const [progress, setProgress] = useState('Loading map data…');
   const [error, setError] = useState<string | null>(null);
   const maxDpr = Math.min(2, window.devicePixelRatio || 1);
@@ -72,7 +74,11 @@ export function Drive(props: DriveProps) {
       });
       built = s;
       await s.build((m) => setProgress(`Building ${place} in 3D… ${m}`));
+      setProgress(`Building ${place} in 3D… Loading textures…`);
+      const loaded = await loadTextureOverrides();
+      s.debugExtra.textures = loaded.count ? `${loaded.count} generated` : 'procedural';
       if (cancelled) return;
+      setTexOverrides(loaded.overrides);
       setSession(s);
     })().catch((e) => setError((e as Error).message));
     return () => {
@@ -120,7 +126,7 @@ export function Drive(props: DriveProps) {
             gl.outputColorSpace = THREE.SRGBColorSpace;
           }}
         >
-          <DriveScene session={session} mirrors={props.mirrors} dpr={dpr} setDpr={setDpr} maxDpr={props.gpu.software ? 1 : maxDpr} />
+          <DriveScene session={session} texOverrides={texOverrides} mirrors={props.mirrors} dpr={dpr} setDpr={setDpr} maxDpr={props.gpu.software ? 1 : maxDpr} />
         </Canvas>
       )}
       {session ? (
@@ -137,10 +143,10 @@ export function Drive(props: DriveProps) {
   );
 }
 
-function DriveScene({ session, mirrors, dpr, setDpr, maxDpr }: { session: Session; mirrors: boolean; dpr: number; setDpr: (n: number) => void; maxDpr: number }) {
+function DriveScene({ session, texOverrides, mirrors, dpr, setDpr, maxDpr }: { session: Session; texOverrides: TextureOverrides; mirrors: boolean; dpr: number; setDpr: (n: number) => void; maxDpr: number }) {
   const { gl, scene, camera, size } = useThree();
   const parts = useMemo(() => {
-    const tex = makeTextures(gl.capabilities.getMaxAnisotropy());
+    const tex = mergeTextures(makeTextures(gl.capabilities.getMaxAnisotropy()), texOverrides);
     return {
       city: createCity(session, tex),
       traffic: createTraffic(session),
