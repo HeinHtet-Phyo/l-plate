@@ -68,3 +68,16 @@
 - **Alternatives:** wait for Aryaan's atmosphere (blocks the city); put real THREE lights at 3,000 lamps (far too slow).
 - **Affects:** @Aryaan2303 (atmosphere: please use the same lamp map uv convention), @christopherwhite06 (integration). Note that Chris's build decisions are in the root `DECISIONS.md`.
 
+
+## 2026-10-24 15:20: Elephant & Castle Gaussian-splat street (@HeinHtet-Phyo)
+- **Decision:**
+  - The free drive `elephant-splat` gets a Gaussian-splat capture of about 320 m of real street, following `splat.md`.
+  - Imagery: Panoramax sequence `8a558208-5401-4097-aab5-a609509595d1` by **RedAuburn**, **CC BY-SA 4.0**. The splat is a derived work, so it's CC BY-SA 4.0 too, and the credit shows in the HUD (`session.mapCredit` from `transform.json`).
+  - Camera poses come from pycolmap 4.2.1 SfM (single OPENCV camera, sequential matching).
+  - Training: Brush v0.3.0 on Hein's Apple M5 (Metal) rather than a CUDA box, since there's no NVIDIA PC available. Step count and splat count: pending.
+  - Rendering: Spark (`@sparkjsdev/spark`) on three 0.180. The splat mesh uses `matrixAutoUpdate = false` with the column-major matrix from `apps/web/public/splats/elephant-splat/transform.json`.
+  - Placement in the OSM local frame (x east, y up, z south) comes from levelling with the cameras' up vectors, then a 2D Umeyama fit of camera centres to the photos' GPS, with the ground at y = 0. GPS RMS: pending.
+  - On that start only, the city buildings, trees, parked cars and road surface are hidden, and parked cars are skipped in physics. Traffic, signals and the cabin stay.
+- **Why:** a real photographed street looks far better than procedural buildings, and it shows what open data plus open tools can do in a day.
+- **Alternatives:** Google Photorealistic 3D Tiles (already used on Goodmayes, but coarse at street level); gsplat/Nerfstudio (needs CUDA); Postshot (Windows/NVIDIA).
+- **Affects:** @christopherwhite06 (`apps/web/src/app/splat.ts`, `Drive.tsx`, `sim/session.ts` changes; pull `hein` onto the demo laptop).

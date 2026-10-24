@@ -15,6 +15,7 @@ import { loadTextureOverrides, mergeTextures, type TextureOverrides } from './te
 import { createPostFx } from './postfx.ts';
 import { createGoogleTiles } from './googleTiles.ts';
 import { drapeObject } from './terrain.ts';
+import { createSplat, wantsSplat } from './splat.ts';
 
 const QUERY = new URLSearchParams(location.search);
 const GOOGLE_KEY = (import.meta.env.VITE_GOOGLE_MAPS_BROWSER_KEY as string | undefined)?.trim() || '';
@@ -181,6 +182,16 @@ function DriveScene({ session, texOverrides, mirrors, dpr, setDpr, maxDpr }: { s
       tiles.dispose();
     };
   }, [tiles]);
+  // Gaussian-splat street capture for starts that have one (splat.ts); replaces buildings, trees, parked cars and road.
+  const splat = useMemo(() => (wantsSplat(session) && QUERY.get('splat') !== '0' ? createSplat(session, gl) : null), [session, gl]);
+  useEffect(() => {
+    if (!splat) return;
+    scene.add(splat.object);
+    return () => {
+      scene.remove(splat.object);
+      splat.dispose();
+    };
+  }, [splat]);
   useEffect(() => () => fx?.dispose(), [fx]);
   const frame = useRef(0);
 
@@ -232,6 +243,10 @@ function DriveScene({ session, texOverrides, mirrors, dpr, setDpr, maxDpr }: { s
       tiles.update(session, cam, gl, parts.city.object, scene);
       session.mapCredit = tiles.credits() || null;
       session.debugExtra.tiles = tiles.status();
+    }
+    if (splat) {
+      splat.update(session, parts.city.object);
+      session.debugExtra.splat = splat.status();
     }
     if (fx) fx.update(session, cam);
     if (mirrors) parts.cabin.renderMirrors(gl, scene, frame.current++);

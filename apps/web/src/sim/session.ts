@@ -171,7 +171,8 @@ export class Session {
     const spawn = this.net.spawnNear(sx, sz, this.setup.start.heading) ?? { x: sx, z: sz, heading: this.setup.start.heading };
     progress('Parking cars and planting trees…');
     await nextTick();
-    this.parked = placeParkedCars(this.net, this.signals, spawn);
+    // The splat capture has its own real parked cars, so ours would be invisible obstacles.
+    this.parked = this.setup.id === 'elephant-splat' ? [] : placeParkedCars(this.net, this.signals, spawn);
     this.trees = placeTrees(ex, this.grid);
     this.lamps = placeStreetlights(this.net, this.grid);
     this.lightMap = bakeLightMap(this.lamps, ex.radius);
