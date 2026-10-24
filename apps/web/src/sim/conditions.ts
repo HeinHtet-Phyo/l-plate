@@ -99,6 +99,7 @@ function describe(code: number): string {
 
 export const PRESETS = {
   sunny: { cloud: 0.1, rain: 0, fog: 0, hour: 13, description: 'Sunny' },
+  golden: { cloud: 0.15, rain: 0, fog: 0.05, hour: 17.25, description: 'Golden hour' },
   cloudy: { cloud: 0.95, rain: 0, fog: 0.1, hour: 13, description: 'Overcast' },
   rain: { cloud: 1, rain: 0.75, fog: 0.25, hour: 13, description: 'Rain' },
   fog: { cloud: 1, rain: 0, fog: 0.85, hour: 9, description: 'Fog' },
@@ -110,7 +111,8 @@ export type PresetId = keyof typeof PRESETS;
 /** A Date for today at a London wall-clock hour. */
 export function dateAtLondonHour(hour: number, now = new Date()): Date {
   const lt = londonTime(now);
-  const utc = Date.UTC(lt.year, lt.month - 1, lt.day, hour, 0, 0) - lt.offsetMin * 60_000;
+  // Fractional hours (e.g. 17.25) are allowed.
+  const utc = Date.UTC(lt.year, lt.month - 1, lt.day) + hour * 3_600_000 - lt.offsetMin * 60_000;
   return new Date(utc);
 }
 

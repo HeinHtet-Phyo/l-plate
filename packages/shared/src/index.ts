@@ -81,7 +81,8 @@ export interface PairResponse {
   controllerToken: string;
 }
 
-export type PhoneCommand = 'indicator-left' | 'indicator-right' | 'handbrake' | 'recover';
+export type PhoneCommand = 'indicator-left' | 'indicator-right' | 'handbrake' | 'recover' | 'reverse';
+export type Gear = 'D' | 'R';
 export type SensorStatus = 'ok' | 'flat' | 'denied' | 'unavailable';
 export type Indicator = 'off' | 'left' | 'right';
 
@@ -99,6 +100,7 @@ export type HostMessage =
       handbrake: boolean;
       speedMph: number;
       driving: boolean;
+      gear: Gear;
     }
   | { type: 'ping' };
 

@@ -4,12 +4,12 @@
 > **Edit only your own lane.** In the shared sections, change single lines; don't reorder or rewrite.
 > Keep this file under ~150 lines. Details belong in `docs/sessions/`.
 
-Last updated: 2026-10-24 13:58 by @minthantkyaw28
+Last updated: 2026-10-24 14:28 by @jai-matharu
 
 ## Snapshot
 
 - **Idea:** L-Plate, a driving-practice game on real UK streets with an AI instructor. See `docs/PROJECT.md`.
-- **Works end-to-end:** nothing yet (no app code).
+- **Works end-to-end:** Goodmayes drives in the full app with the city, cabin, mirrors, phone controls, live instructor and AI debrief; city PR #1 awaits merge.
 - **Repo has:** the shared agent memory system (AGENTS.md, this board, `docs/`, workflow skills, session-start hook), tool-neutral
   in `.agents/` with adapters for Claude Code (`.claude/`) and Cursor (`.cursor/`), plus Token Factory, Nebius and Tavily skills.
 - **Keys verified live (2026-10-24):** Token Factory (29 serverless models, chat/tools/JSON/vision/embeddings OK, no image
@@ -29,23 +29,23 @@ Last updated: 2026-10-24 13:58 by @minthantkyaw28
 ## Lanes
 
 ### @minthantkyaw28
-- **Status:** in progress
-- **Working on:** TEAM-PLAN §2, the city renderer: `createCity(s, tex)` in `apps/web/src/render/city/**` (road surface shader, markings, buildings, trees, parked cars, streetlights, traffic lights, Belisha beacons) + `render/textures.ts`
-- **Next:** PR `feat/city` into main for Chris to merge; Goodmayes should look like a London street
+- **Status:** done; **merged into `main`** by @christopherwhite06.
+- **Working on:** nothing
+- **Next:** @christopherwhite06 merges https://github.com/christopherwhite06/Nebius-Hack/pull/1, then run the final merged-device performance/demo pass.
 - **Branch:** feat/city
-- **Updated:** 2026-10-24 13:58
-- **Log:** `docs/sessions/2026-10-24-1133-minthantkyaw28-agent-memory-system.md`
+- **Updated:** 2026-10-24 14:23
+- **Log:** `docs/sessions/2026-10-24-1420-minthantkyaw28-finish-city-renderer.md`
 
 ### @christopherwhite06
-- **Status:** in progress. Pushed the L-Plate base: pnpm workspace (`apps/web`, `apps/server`, `packages/shared`), OSM data for all 9 areas + 5 test routes, server (phone relay, Nebius instructor + examiner debrief, reroute), browser sim core. **Work split: `TEAM-PLAN.md`.**
-- **Working on:** app shell, render loop, HUD, menu, integration (TEAM-PLAN §1). Target: `?route=goodmayes` end to end by 16:30.
+- **Status:** in progress. App shell done and pushed: menu, drive screen (two-pass render loop, adaptive dpr), HUD, lesson summary with Nebius debrief, phone QR panel. `?route=goodmayes` drives end to end at 60 fps with fallback visuals; your render modules replace the fallbacks automatically when merged (`apps/web/src/app/parts.ts`).
+- **Working on:** integration and polish; merging your PRs. Run it: server `PORT=8090 pnpm --filter @lplate/server dev`, web `SERVER_PORT=8090 pnpm --filter @lplate/web dev -- --port 5174`.
 - **Next:** merge Min/Hein/Aryaan/Jai PRs as they land
 - **Branch:** main
-- **Updated:** 2026-10-24 14:05
+- **Updated:** 2026-10-24 15:10
 - **Log:** `DECISIONS.md`, `docs/MODEL-NOTES.md`
 
 ### @HeinHtet-Phyo
-- **Status:** phone page and cabin done on branch `hein`, typechecked and rendered on Goodmayes (sunny, rain, night) with a local harness. Not in `main` yet.
+- **Status:** phone page and cabin done; **merged into `main`** by @christopherwhite06 (picked up automatically via `app/parts.ts` and `main.tsx`).
 - **Working on:** nothing; ready for integration
 - **Next:** Chris: (1) lazy-load `apps/web/src/phone/PhonePage.tsx` (default export) for `/c/*`; (2) `import { createCabin } from './render/cabin/index.ts'` and follow the TEAM-PLAN render loop (`cabin.update(s, dt, worldCam)`, `cabin.renderMirrors(gl, scene, frame)`, then a second pass after `clearDepth`). Merge `hein` into `main`, or tell me to open a PR. Optional: Google map overlay (§11).
 - **Branch:** `hein`
@@ -53,22 +53,23 @@ Last updated: 2026-10-24 13:58 by @minthantkyaw28
 - **Log:** `docs/sessions/2026-10-24-1325-HeinHtet-Phyo-phone-controller.md`
 
 ### @Aryaan2303
-- **Status:** not started
-- **Working on:** nothing
-- **Next:** nothing yet
-- **Branch:** none
-- **Updated:** never
-- **Log:** none
+- **Status:** in progress. `createAtmosphere(s)` (sky dome, sun/moon/hemisphere lights, ACES tone mapping, FogExp2, 7k-streak rain, live Open-Meteo weather refresh every 10 min) and `createTraffic(s)` (instanced bodies/glass/wheels/head-tail lights for up to 130 cars) built in `apps/web/src/render/atmosphere/`, `apps/web/src/render/traffic/`. Also pushed the shared `render/types.ts` contract and `render/atmosphere/uniforms.ts` stub that were missing, so Min's city shaders and the rest of the render loop have something to compile against.
+- **Working on:** verifying a standalone smoke-test render before opening the PR (no app shell/render loop exists yet to test against end to end — that's Chris's TEAM-PLAN §1).
+- **Next:** open PR into main once smoke test passes; then optionally wire `Traffic.applySpeedBands` for live Google traffic (optional per TEAM-PLAN §4).
+- **Branch:** feat/atmosphere-traffic
+- **Updated:** 2026-10-24 14:20
+- **Log:** `docs/sessions/2026-10-24-1420-Aryaan2303-atmosphere-traffic.md`
 
 ### @jai-matharu
-- **Status:** not started
-- **Working on:** nothing
-- **Next:** nothing yet
-- **Branch:** none
-- **Updated:** never
-- **Log:** none
+- **Status:** in progress. Done: typecheck clean; Vitest 85 web + 44 server tests (`pnpm test`); `scripts/scan-secrets.ts`; `scripts/build-rules.ts` + `apps/server/data/highway-code.json` (307 rules); README; first headless Goodmayes check passed (M1 GPU, Sam speaking). **Merged into `main`** by @christopherwhite06 (typecheck clean, 129 tests pass, scan-secrets clean).
+- **Working on:** PR #2 (§5). Belvedere refetch skipped by decision (extract still empty; don't demo that route)
+- **Next:** final §21 headless checks + screenshots in the last 30 min. Known bug for sim owner: `friendlyGpuName` splits on commas inside "(radeonsi, …)" (test marked `.fails`).
+- **Branch:** jai (PR into main)
+- **Updated:** 2026-10-24 14:28
+- **Log:** `docs/MODEL_FAILURES.md` (Sam "Good morning" at 14:11; weak short-query retrieval; Token Factory 503 outage 14:27)
 
 ## Blockers / questions for the humans
 
 <!-- Format: - [@who] question or blocker (since HH:MM) -->
-- None yet.
+- [@minthantkyaw28] @christopherwhite06: `docs/SPEC.md` isn't in the repo, but every § number in `TEAM-PLAN.md` points to it. Please push it (since 14:08)
+- [@minthantkyaw28] @christopherwhite06: notes are splitting in two. Root `DECISIONS.md` vs `docs/DECISIONS.md`, and `docs/MODEL-NOTES.md` vs `docs/MODEL_FAILURES.md` (the `demo-prep` skill reads the `docs/` ones). I copied the 4 MODEL-NOTES failures into `docs/MODEL_FAILURES.md`; please log new ones there (since 14:08)

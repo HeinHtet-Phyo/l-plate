@@ -1,7 +1,7 @@
 # Decisions (choices the build prompt left open)
 
 - **Models (from `/v1/models?verbose=true`, 2026-10-24):** no `-fast` flavours are listed. Instructor: `Qwen/Qwen3-30B-A3B-Instruct-2507` (non-reasoning, 0.4–0.5 s full reply, so replies aren't streamed). Examiner: `Qwen/Qwen3-235B-A22B-Instruct-2507` (supports `structured_outputs`). Embeddings: `Qwen/Qwen3-Embedding-8B`.
-- **Nebius textures:** skipped. No model with `text->image` modality is listed.
+- **Generated textures (overrides the spec's no-Gemini rule, at Chris's request, 2026-10-24):** Nebius lists no `text->image` model, so `pnpm textures:generate` uses a Gemini image model (`gemini-3.1-flash-image`, `GEMINI_API_KEY` in the gitignored root `.env`) offline only. Every image is reviewed by a Nebius vision model (`Qwen/Qwen3.8-27B`, JSON verdict) and regenerated up to 4 times. Outputs are committed under `apps/web/public/textures/`; the app has no Gemini code or dependency at runtime and falls back to procedural textures. First run blocked: the Gemini billing account hit its monthly spending cap.
 - **Privacy:** Token Factory stores prompts and outputs by default. Switch on Zero Data Retention for the organisation before sending real learner data. No names are sent in prompts.
 - **Debrief:** the server recomputes pass/fail with the DVSA rule and strips Highway Code rule numbers that weren't retrieved (see docs/MODEL-NOTES.md).
 - **Faults:** red lights (serious) and collisions (dangerous) are logged as faults as well as the four in §14.1.
@@ -27,3 +27,11 @@ Not started:
 - React UI (menu, HUD, phone page, summary)
 - speech, tests, Highway Code build script, secret scan, README
 - typecheck/test/build have not been run yet
+
+# Changes requested on the day (override the spec)
+
+- **Reverse gear** (spec said "no reverse"): G on the keyboard or the phone's Reverse button, only when stopped; capped about 11 mph; creeps backwards like an automatic. The phone receives `gear` in its state.
+- **Phone steering is gyro-only:** the phone's motion sensors (orientation fusion, gyro + accelerometer) are the wheel; touch-drag steering was removed. Without motion sensors (desktop, or plain HTTP) the phone can't steer, so use `pnpm tunnel` (HTTPS) for phones.
+- **Goodmayes extract widened to a 600 m corridor** (spec: 300 m) so wrong turns stay on the map: 815 roads and 2,102 buildings, radius 1,750 m. Still 60 fps. Refetch with `pnpm osm:fetch goodmayes --force --corridor=600`.
+- **Generated textures only for Goodmayes' styles** (to save the Gemini budget): Victorian red, Georgian brick, stucco, modern flats, Portland stone, warehouse brick (upper + ground floors), shopfront, slate, flat roof, asphalt, paving. Office glass stays procedural.
+- **Instructor fallback model:** if `NEBIUS_MODEL_INSTRUCTOR` fails (Nebius returned 503s for it), the server retries once, then uses `NEBIUS_MODEL_INSTRUCTOR_FALLBACK` (default `deepseek-ai/DeepSeek-V4-Flash-0731`).

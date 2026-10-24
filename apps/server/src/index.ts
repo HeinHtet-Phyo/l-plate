@@ -14,12 +14,17 @@ const KEY = process.env.NEBIUS_API_KEY?.trim() || '';
 const MODEL_INSTRUCTOR = process.env.NEBIUS_MODEL_INSTRUCTOR || 'Qwen/Qwen3-30B-A3B-Instruct-2507';
 const MODEL_EXAMINER = process.env.NEBIUS_MODEL_EXAMINER || 'Qwen/Qwen3-235B-A22B-Instruct-2507';
 const MODEL_RERANK = process.env.NEBIUS_MODEL_RERANK || '';
+// Used when the instructor model is unavailable (Nebius returned 503s for it during the hackathon).
+const MODEL_INSTRUCTOR_FALLBACK = process.env.NEBIUS_MODEL_INSTRUCTOR_FALLBACK || 'deepseek-ai/DeepSeek-V4-Flash-0731';
 
 export function buildApp() {
   const app = Fastify({ logger: { level: process.env.LOG_LEVEL ?? 'info' } });
   const relay = new Relay();
   const limiter = new RateLimiter(1000);
-  const nebius = KEY ? createNebius({ apiKey: KEY, reasoningEffort: process.env.NEBIUS_REASONING_EFFORT || undefined }) : null;
+  const effort = process.env.NEBIUS_REASONING_EFFORT || undefined;
+  const nebius = KEY ? createNebius({ apiKey: KEY, reasoningEffort: effort }) : null;
+  // Directions are time-critical: one quick retry, then the fallback model.
+  const nebiusFast = KEY ? createNebius({ apiKey: KEY, retries: 1, backoffMs: 300, timeoutMs: 8000, reasoningEffort: effort }) : null;
 
   app.register(websocket);
 
@@ -81,16 +86,23 @@ export function buildApp() {
       const asksRule = lastLearner && /rule|highway code|allowed|legal|should i|can i/i.test(lastLearner.text);
       const rules = asksRule ? await searchRules(nebius, lastLearner!.text, MODEL_RERANK).catch(() => []) : [];
       const t0 = Date.now();
-      const res = await nebius.chat({
-        model: MODEL_INSTRUCTOR,
-        messages: buildInstructorMessages(body, rules),
-        max_tokens: 120,
-        temperature: 0.3,
-      });
+      const ask = (model: string, client: typeof nebius) =>
+        client.chat({ model, messages: buildInstructorMessages(body, rules), max_tokens: 120, temperature: 0.3, reasoning_effort: 'none' });
+      let model = MODEL_INSTRUCTOR;
+      let res;
+      try {
+        res = await ask(model, nebiusFast!);
+      } catch (e) {
+        if (e instanceof NebiusError && (e.status === 401 || e.status === 402)) throw e;
+        req.log.warn({ err: (e as Error).message.slice(0, 120) }, 'instructor model failed; trying fallback');
+        model = MODEL_INSTRUCTOR_FALLBACK;
+        res = await ask(model, nebiusFast!);
+      }
       const text = cleanSpoken(res.choices?.[0]?.message?.content ?? '');
-      req.log.info({ ms: Date.now() - t0, model: MODEL_INSTRUCTOR }, 'instructor reply');
-      return { text, model: MODEL_INSTRUCTOR, ms: Date.now() - t0 };
+      req.log.info({ ms: Date.now() - t0, model }, 'instructor reply');
+      return { text, model, ms: Date.now() - t0 };
     } catch (e) {
+      req.log.warn({ err: (e as Error).message }, 'instructor failed');
       const status = e instanceof NebiusError && e.status ? e.status : 502;
       return reply.code(status === 401 || status === 402 ? status : 502).send({ error: (e as Error).message, text: '' });
     }
@@ -101,7 +113,7 @@ export function buildApp() {
     const safe: DebriefRequest = {
       route: String(body?.route ?? 'the drive').slice(0, 120),
       faults: Array.isArray(body?.faults) ? body.faults.slice(0, 200) : [],
-      stats: { distance: 0, duration: 0, maxSpeedOverLimit: 0, ...(body?.stats ?? {}) },
+      stats: { ...(body?.stats ?? {}), distance: num(body?.stats?.distance), duration: num(body?.stats?.duration), maxSpeedOverLimit: num(body?.stats?.maxSpeedOverLimit) },
     };
     if (!nebius) return { ...ruleBasedDebrief(safe), error: 'No NEBIUS_API_KEY: offline debrief' };
     try {
@@ -117,16 +129,23 @@ export function buildApp() {
   app.post('/api/rules/search', async (req, reply) => {
     if (!nebius) return reply.code(503).send({ error: 'No NEBIUS_API_KEY' });
     const q = String((req.body as { query?: string })?.query ?? '').slice(0, 500);
-    return { results: await searchRules(nebius, q, MODEL_RERANK) };
+    try {
+      return { results: await searchRules(nebius, q, MODEL_RERANK) };
+    } catch (e) {
+      req.log.warn({ err: (e as Error).message }, 'rules search failed');
+      return reply.code(502).send({ error: (e as Error).message, results: [] });
+    }
   });
 
   return app;
 }
 
+const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : 0);
+
 function lanUrls(): string[] {
   const out: string[] = [];
   for (const list of Object.values(networkInterfaces())) {
-    for (const i of list ?? []) if (i.family === 'IPv4' && !i.internal) out.push(`http://${i.address}:5173`);
+    for (const i of list ?? []) if (i.family === 'IPv4' && !i.internal) out.push(`http://${i.address}:${process.env.WEB_PORT ?? 5173}`);
   }
   return out;
 }

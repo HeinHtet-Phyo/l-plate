@@ -13,7 +13,7 @@ export function combine(kb: Controls, phone: Controls | null): InputState {
   return { steer: pick(kb.steer, phone.steer), throttle: Math.max(kb.throttle, phone.throttle), brake: Math.max(kb.brake, phone.brake), steerAbsolute };
 }
 
-export type KeyAction = 'indicator-left' | 'indicator-right' | 'handbrake' | 'recover' | 'talk-start' | 'talk-end' | 'phone' | 'help' | 'debug' | 'exit';
+export type KeyAction = 'indicator-left' | 'indicator-right' | 'handbrake' | 'recover' | 'reverse' | 'talk-start' | 'talk-end' | 'phone' | 'help' | 'debug' | 'exit';
 
 export class Keyboard {
   down = new Set<string>();
@@ -32,6 +32,7 @@ export class Keyboard {
     if (k === 'e') this.actions.push('indicator-right');
     if (k === ' ') this.actions.push('handbrake');
     if (k === 'r') this.actions.push('recover');
+    if (k === 'g') this.actions.push('reverse');
     if (k === 'v') this.actions.push('talk-start');
     if (k === 'p') this.actions.push('phone');
     if (k === 'h') this.actions.push('help');

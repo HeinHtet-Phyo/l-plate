@@ -13,6 +13,8 @@ export const VEHICLE = {
   engineBraking: 0.6,
   creepSpeed: 1.6,
   creepAccel: 0.9,
+  /** Reverse gear: gentle, capped around 11 mph. */
+  maxReverseSpeed: 5,
   /** Eye is 0.37 m right of the centre line, 1.2 m up. */
   eyeRight: 0.37,
   eyeHeight: 1.2,
@@ -39,6 +41,8 @@ export class Vehicle {
   heading = 0;
   speed = 0;
   handbrake = true;
+  /** Reverse gear engaged (speed is negative while reversing). */
+  reverse = false;
   /** Smoothed steering −1…1. */
   steer = 0;
   accel = 0;
@@ -62,9 +66,23 @@ export class Vehicle {
 
   /** Longitudinal acceleration for controls; never pushes the car backwards. */
   longitudinal(c: Controls): number {
-    const v = this.speed;
+    // Work in the gear's direction of travel: v ≥ 0 means moving the way the gear drives.
+    const dir = this.reverse ? -1 : 1;
+    return dir * this.alongGear(c, this.speed * dir);
+  }
+
+  /** Select reverse/drive; only when (nearly) stopped. Returns whether it changed. */
+  toggleReverse(): boolean {
+    if (Math.abs(this.speed) > 0.5) return false;
+    this.reverse = !this.reverse;
+    this.speed = 0;
+    return true;
+  }
+
+  private alongGear(c: Controls, v: number): number {
     let a = 0;
-    if (!this.handbrake && c.throttle > 0) a += VEHICLE.maxAccel * c.throttle * Math.max(0, 1 - v / 50);
+    const top = this.reverse ? VEHICLE.maxReverseSpeed : 50;
+    if (!this.handbrake && c.throttle > 0) a += VEHICLE.maxAccel * (this.reverse ? 0.5 : 1) * c.throttle * Math.max(0, 1 - v / top);
     let resist = VEHICLE.rolling + VEHICLE.drag * v * v + c.brake * VEHICLE.maxBrake;
     if (c.throttle <= 0) resist += VEHICLE.engineBraking;
     if (this.handbrake) resist += VEHICLE.handbrake;
@@ -80,7 +98,9 @@ export class Vehicle {
   propose(c: Controls, dt: number): { x: number; z: number; heading: number; speed: number } {
     const a = this.longitudinal(c);
     let v = this.speed + a * dt;
-    if (v < 0) v = 0; // no reverse; resistance never pushes backwards
+    // Resistance never pushes the car against its gear.
+    if (!this.reverse && v < 0) v = 0;
+    if (this.reverse && v > 0) v = 0;
     this.accel = (v - this.speed) / dt;
     const vm = (this.speed + v) / 2;
     const delta = this.wheelAngle() * DEG;

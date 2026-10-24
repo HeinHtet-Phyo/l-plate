@@ -29,6 +29,7 @@ export interface Toast {
 
 export interface HudSnapshot {
   speedMph: number;
+  gear: 'D' | 'R';
   limit: number | null;
   road: string;
   indicator: Indicator;
@@ -117,6 +118,7 @@ export class Session {
   private lastPublish = -Infinity;
   private lastPhoneState = -Infinity;
   private passedStep = -1;
+  private lastCollisionFault = -Infinity;
   private lastStepCheck = -Infinity;
   private distance = 0;
   private finished = false;
@@ -132,6 +134,8 @@ export class Session {
   private listeners = new Set<() => void>();
   snapshot: HudSnapshot;
   debugExtra: Record<string, string | number> = {};
+  /** Map imagery credit (Google 3D Tiles), shown with the attribution. */
+  mapCredit: string | null = null;
 
   constructor(setup: SessionSetup) {
     this.setup = setup;
@@ -215,7 +219,7 @@ export class Session {
   private status(): DrivingStatus {
     const n = this.nav?.state;
     return {
-      speedMph: this.world.car.speed * 2.23694,
+      speedMph: Math.abs(this.world.car.speed) * 2.23694,
       limitMph: this.currentLimit(),
       road: this.world.under?.road ?? '',
       indicator: this.indicator,
@@ -243,7 +247,8 @@ export class Session {
         }
       : null;
     return {
-      speedMph: w ? Math.round(w.car.speed * 2.23694) : 0,
+      speedMph: w ? Math.round(Math.abs(w.car.speed) * 2.23694) : 0,
+      gear: w?.car.reverse ? 'R' : 'D',
       limit: w ? this.currentLimit() : null,
       road: w?.under?.road ?? '',
       indicator: this.indicator,
@@ -271,7 +276,7 @@ export class Session {
       exit: this.exit,
       debug: w
         ? {
-            speed: `${(w.car.speed * 2.23694).toFixed(1)} mph`,
+            speed: `${(Math.abs(w.car.speed) * 2.23694).toFixed(1)} mph${w.car.reverse ? ' (R)' : ''}`,
             heading: w.car.heading.toFixed(1),
             lateral: w.under ? w.under.lateral.toFixed(2) : '–',
             road: w.under ? `${w.under.road || '(unnamed)'} · ${w.under.seg.road.highway} · ${w.under.limit} mph` : '–',
@@ -309,6 +314,10 @@ export class Session {
     if (c === 'indicator-left') this.setIndicator('left');
     else if (c === 'indicator-right') this.setIndicator('right');
     else if (c === 'handbrake') car.handbrake = !car.handbrake;
+    else if (c === 'reverse') {
+      if (car.toggleReverse()) this.toast(car.reverse ? 'Reverse gear (R)' : 'Drive (D)', 'info', 1.5);
+      else this.toast('Stop the car before changing gear', 'warn', 2);
+    }
     else if (c === 'recover') {
       this.world.recover();
       this.toast('Car recovered to the nearest lane', 'info', 2);
@@ -447,7 +456,7 @@ export class Session {
     // Traffic.
     this.traffic.busy = busyness(this.conditions.hour, this.conditions.weekend);
     const [cx, cz] = car.centre();
-    this.traffic.step(dt, { x: cx, z: cz, heading: car.heading, speed: car.speed });
+    this.traffic.step(dt, { x: cx, z: cz, heading: car.heading, speed: Math.max(0, car.speed) });
     w.dynamicObstacles = this.traffic.obstacles();
 
     // Camera spring and motion.
@@ -466,7 +475,9 @@ export class Session {
           break;
         case 'collision':
           this.toast(e.what === 'car' ? 'You hit a parked car!' : e.what === 'tree' ? 'You hit a tree!' : 'You hit a building!');
-          this.faults.collision(e.what, this.time, road);
+          // Pressing against the same obstacle is one fault, not one per bump.
+          if (this.time - this.lastCollisionFault > 6) this.faults.collision(e.what, this.time, road);
+          this.lastCollisionFault = this.time;
           break;
         case 'kerb':
           this.toast('You mounted the kerb!');
@@ -533,7 +544,7 @@ export class Session {
     const limit = this.currentLimit();
     this.faults.update({
       time: this.time,
-      speedMph: car.speed * 2.23694,
+      speedMph: Math.abs(car.speed) * 2.23694,
       limitMph: limit,
       road,
       indicator: this.indicator,
@@ -562,7 +573,7 @@ export class Session {
     // Phone state ~10 Hz.
     if (host && this.time - this.lastPhoneState > 0.1) {
       this.lastPhoneState = this.time;
-      host.sendState({ type: 'state', indicator: this.indicator, indicatorLit: this.indicatorLit, handbrake: car.handbrake, speedMph: Math.round(car.speed * 2.23694), driving: true });
+      host.sendState({ type: 'state', indicator: this.indicator, indicatorLit: this.indicatorLit, handbrake: car.handbrake, speedMph: Math.round(Math.abs(car.speed) * 2.23694), driving: true, gear: car.reverse ? 'R' : 'D' });
     }
     this.publish();
   }
