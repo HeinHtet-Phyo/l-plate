@@ -1,7 +1,7 @@
 // Post-processing for the world pass: god rays from the sun, bloom and filmic tone mapping.
 // The cabin is drawn afterwards with a plain render, so it stays crisp. ?fx=0 turns this off.
 import * as THREE from 'three';
-import { BloomEffect, EffectComposer, EffectPass, GodRaysEffect, KernelSize, RenderPass, SMAAEffect, ToneMappingEffect, ToneMappingMode } from 'postprocessing';
+import { BloomEffect, EffectComposer, EffectPass, GodRaysEffect, KernelSize, RenderPass, SMAAEffect, SMAAPreset, ToneMappingEffect, ToneMappingMode } from 'postprocessing';
 import { headingVec } from '../sim/geo.ts';
 import type { Session } from '../sim/session.ts';
 
@@ -26,19 +26,19 @@ export function createPostFx(gl: THREE.WebGLRenderer, scene: THREE.Scene, camera
   scene.add(sun);
 
   const godRays = new GodRaysEffect(camera, sun, {
-    height: 360,
-    kernelSize: KernelSize.SMALL,
+    height: 720,
+    kernelSize: KernelSize.MEDIUM,
     density: 0.97,
     decay: 0.93,
     weight: 0.55,
     exposure: 0.6,
-    samples: 60,
+    samples: 100,
     clampMax: 1.0,
     blur: true,
   });
   const bloom = new BloomEffect({ intensity: 0.9, luminanceThreshold: 0.82, luminanceSmoothing: 0.2, mipmapBlur: true });
   const tone = new ToneMappingEffect({ mode: ToneMappingMode.ACES_FILMIC });
-  composer.addPass(new EffectPass(camera, godRays, bloom, tone, new SMAAEffect()));
+  composer.addPass(new EffectPass(camera, godRays, bloom, tone, new SMAAEffect({ preset: SMAAPreset.ULTRA })));
 
   return {
     update(s, cam) {
