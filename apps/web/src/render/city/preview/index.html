@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>City preview</title>
+    <style>
+      html, body { margin: 0; height: 100%; background: #111; overflow: hidden; }
+      canvas { display: block; }
+      #info { position: fixed; left: 8px; top: 8px; font: 12px/1.4 ui-monospace, monospace; color: #fff; background: rgba(0,0,0,.55); padding: 6px 8px; border-radius: 4px; white-space: pre; pointer-events: none; }
+    </style>
+  </head>
+  <body>
+    <div id="info">loading…</div>
+    <script type="module" src="./preview.ts"></script>
+  </body>
+</html>
