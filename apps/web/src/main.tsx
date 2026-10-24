@@ -7,9 +7,13 @@ const phonePages = import.meta.glob<{ default: React.ComponentType }>('./phone/P
 const phoneLoader = Object.values(phonePages)[0];
 
 const isPhone = location.pathname.startsWith('/c/');
+// /referee replays a sample drive to several examiner models (the "where models struggle" demo).
+const isReferee = location.pathname.startsWith('/referee');
 const Page = isPhone
   ? lazy(phoneLoader ?? (async () => ({ default: () => <p style={{ padding: 24 }}>The phone controller isn't built yet.</p> })))
-  : lazy(() => import('./app/App.tsx'));
+  : isReferee
+    ? lazy(() => import('./referee/Referee.tsx'))
+    : lazy(() => import('./app/App.tsx'));
 
 createRoot(document.getElementById('root')!).render(
   <Suspense fallback={<p style={{ padding: 24 }}>Loading…</p>}>

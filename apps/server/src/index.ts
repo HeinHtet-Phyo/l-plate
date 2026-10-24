@@ -2,12 +2,13 @@
 import Fastify from 'fastify';
 import websocket from '@fastify/websocket';
 import { networkInterfaces } from 'node:os';
-import type { AppConfig, DebriefRequest, InstructorRequest, Role } from '@lplate/shared';
+import type { AppConfig, DebriefRequest, InstructorRequest, RefereeRequest, Role, RuleHit } from '@lplate/shared';
 import { Relay } from './relay.ts';
 import { createNebius, NebiusError } from './nebius.ts';
 import { RateLimiter, buildInstructorMessages, cleanSpoken, nebiusDebrief, ruleBasedDebrief } from './instructor.ts';
 import { routeVia } from './osrm.ts';
 import { searchRules } from './rules.ts';
+import { referee, refereeModels } from './referee.ts';
 
 const PORT = Number(process.env.PORT ?? 8080);
 const KEY = process.env.NEBIUS_API_KEY?.trim() || '';
@@ -17,6 +18,18 @@ const MODEL_RERANK = process.env.NEBIUS_MODEL_RERANK || '';
 // Used when the instructor model is unavailable (Nebius returned 503s for it during the hackathon).
 const MODEL_INSTRUCTOR_FALLBACK = process.env.NEBIUS_MODEL_INSTRUCTOR_FALLBACK || 'deepseek-ai/DeepSeek-V4-Flash-0731';
 
+// The Highway Code lookup is optional context for the examiner: cap it so a slow or 503-ing
+// embeddings call can't hold the debrief up (it once took 18 s), and cache by query.
+const ruleCache = new Map<string, RuleHit[]>();
+async function quickRules(client: Parameters<typeof searchRules>[0], query: string, ms = 4000): Promise<RuleHit[]> {
+  const hit = ruleCache.get(query);
+  if (hit) return hit;
+  const timeout = new Promise<RuleHit[]>((r) => setTimeout(() => r([]), ms));
+  const found = await Promise.race([searchRules(client, query, MODEL_RERANK).catch(() => [] as RuleHit[]), timeout]);
+  if (found.length) ruleCache.set(query, found);
+  return found;
+}
+
 export function buildApp() {
   const app = Fastify({ logger: { level: process.env.LOG_LEVEL ?? 'info' } });
   const relay = new Relay();
@@ -25,6 +38,8 @@ export function buildApp() {
   const nebius = KEY ? createNebius({ apiKey: KEY, reasoningEffort: effort }) : null;
   // Directions are time-critical: one quick retry, then the fallback model.
   const nebiusFast = KEY ? createNebius({ apiKey: KEY, retries: 1, backoffMs: 300, timeoutMs: 8000, reasoningEffort: effort }) : null;
+  // Referee: several models at once, so one retry and a hard cap per model.
+  const nebiusReferee = KEY ? createNebius({ apiKey: KEY, retries: 1, backoffMs: 500, timeoutMs: 25_000, reasoningEffort: effort }) : null;
 
   app.register(websocket);
 
@@ -109,21 +124,28 @@ export function buildApp() {
   });
 
   app.post('/api/debrief', async (req) => {
-    const body = req.body as DebriefRequest;
-    const safe: DebriefRequest = {
-      route: String(body?.route ?? 'the drive').slice(0, 120),
-      faults: Array.isArray(body?.faults) ? body.faults.slice(0, 200) : [],
-      stats: { ...(body?.stats ?? {}), distance: num(body?.stats?.distance), duration: num(body?.stats?.duration), maxSpeedOverLimit: num(body?.stats?.maxSpeedOverLimit) },
-    };
+    const safe = debriefInput(req.body as DebriefRequest);
     if (!nebius) return { ...ruleBasedDebrief(safe), error: 'No NEBIUS_API_KEY: offline debrief' };
     try {
       const kinds = [...new Set(safe.faults.map((f) => f.text))].slice(0, 3).join('; ');
-      const rules = kinds ? await searchRules(nebius, kinds, MODEL_RERANK).catch(() => []) : [];
+      const rules = kinds ? await quickRules(nebius, kinds) : [];
       return await nebiusDebrief(nebius, MODEL_EXAMINER, safe, rules);
     } catch (e) {
       req.log.warn({ err: (e as Error).message }, 'debrief fell back to rules');
       return { ...ruleBasedDebrief(safe), error: (e as Error).message };
     }
+  });
+
+  // Same fault log to several examiner models; raw debriefs scored against the DVSA rule.
+  app.post('/api/referee', async (req, reply) => {
+    if (!nebiusReferee) return reply.code(503).send({ error: 'No NEBIUS_API_KEY: the referee needs Nebius' });
+    const body = req.body as RefereeRequest;
+    const safe = debriefInput(body);
+    const kinds = [...new Set(safe.faults.map((f) => f.text))].slice(0, 3).join('; ');
+    const rules = kinds ? await quickRules(nebiusReferee, kinds) : [];
+    const out = await referee(nebiusReferee, refereeModels(body?.models), safe, rules);
+    req.log.info({ models: out.entries.map((e) => `${e.model}:${e.ok ? e.score : 'err'}:${e.ms}ms`) }, 'referee');
+    return out;
   });
 
   app.post('/api/rules/search', async (req, reply) => {
@@ -141,6 +163,15 @@ export function buildApp() {
 }
 
 const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : 0);
+
+/** The debrief input, clamped: shared by /api/debrief and /api/referee. */
+function debriefInput(body: DebriefRequest | undefined): DebriefRequest {
+  return {
+    route: String(body?.route ?? 'the drive').slice(0, 120),
+    faults: Array.isArray(body?.faults) ? body.faults.slice(0, 200) : [],
+    stats: { ...(body?.stats ?? {}), distance: num(body?.stats?.distance), duration: num(body?.stats?.duration), maxSpeedOverLimit: num(body?.stats?.maxSpeedOverLimit) },
+  };
+}
 
 function lanUrls(): string[] {
   const out: string[] = [];

@@ -1,10 +1,11 @@
 // The phone controller, served at /c/:session?t=…: hold the phone sideways like a steering wheel.
 // Steering comes only from the phone's gyro (motion sensors); the on-screen wheel just shows the angle. The pedals are analogue, and the
 // indicator stalks and handbrake light up from the car's state, which the simulator sends back.
+// Faults buzz the phone and flash a banner; at the end of the lesson the debrief shows as a report card.
 import { useEffect, useMemo, useReducer, useRef, useState, type PointerEvent as ReactPointerEvent, type RefObject } from 'react';
 import type { PhoneCommand, SensorStatus } from '@lplate/shared';
 import { steerFromAngle, wheelAngle } from './tilt.ts';
-import { ControllerLink, parseControllerUrl, type LinkStatus } from './link.ts';
+import { ControllerLink, parseControllerUrl, type HostFault, type HostReport, type LinkStatus } from './link.ts';
 import './phone.css';
 
 const SEND_HZ = 30;
@@ -12,6 +13,11 @@ const SEND_HZ = 30;
 const SENSOR_TIMEOUT_MS = 1500;
 /** Wheel graphic turns this far at full lock (visual only). */
 const WHEEL_LOCK_DEG = 120;
+/** How long a fault banner stays up. */
+const FLASH_MS = 2500;
+/** A serious fault's banner isn't replaced by a minor one for this long. */
+const SERIOUS_HOLD_MS = 1500;
+const SEVERITY_ORDER = { dangerous: 0, serious: 1, driving: 2 } as const;
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 const buzz = (ms = 12) => navigator.vibrate?.(ms);
@@ -34,11 +40,27 @@ function Controller({ session, token }: { session: string; token: string }) {
   const throttle = useRef(0);
   const brake = useRef(0);
   const wheelEl = useRef<HTMLDivElement>(null);
+  const [flash, setFlash] = useState<(HostFault & { id: number; at: number }) | null>(null);
+  const flashTimer = useRef<number | undefined>(undefined);
+  const [closedReport, setClosedReport] = useState<HostReport | null>(null);
 
   useEffect(() => {
     link.onChange = rerender;
+    link.onFault = (f) => {
+      navigator.vibrate?.(f.serious ? [400, 120, 400] : 150);
+      setFlash((cur) => {
+        const now = performance.now();
+        if (cur?.serious && !f.serious && now - cur.at < SERIOUS_HOLD_MS) return cur;
+        clearTimeout(flashTimer.current);
+        flashTimer.current = window.setTimeout(() => setFlash(null), FLASH_MS);
+        return { ...f, id: now, at: now };
+      });
+    };
     link.start();
-    return () => link.stop();
+    return () => {
+      link.stop();
+      clearTimeout(flashTimer.current);
+    };
   }, [link]);
 
   /** Steering comes only from the phone's motion sensors (gyro + accelerometer fusion). */
@@ -144,6 +166,7 @@ function Controller({ session, token }: { session: string; token: string }) {
 
   const host = link.host;
   const tiltWorks = sensor === 'ok' || sensor === 'flat';
+  const report = link.report && link.report !== closedReport ? link.report : null;
 
   return (
     <div className="ph-root">
@@ -169,6 +192,16 @@ function Controller({ session, token }: { session: string; token: string }) {
         <Wheel wheelRef={wheelEl} speed={host?.speedMph ?? null} status={link.status} sensor={sensor} />
         <Pedal label="Accelerate" kind="throttle" value={throttle} />
       </main>
+
+      {flash?.serious && <div className="ph-edge-pulse" key={`edge-${flash.id}`} aria-hidden="true" />}
+      {flash && (
+        <div className={`ph-flash ${flash.serious ? 'ph-flash-serious' : ''}`} key={flash.id} role="alert">
+          <span className="ph-flash-tag">{flash.serious ? 'Serious fault' : 'Fault'}</span>
+          <span className="ph-flash-text">{flash.text}</span>
+        </div>
+      )}
+
+      {report && <ReportCard report={report} onClose={() => setClosedReport(link.report)} />}
 
       {!started && (
         <div className="ph-overlay">
@@ -262,6 +295,42 @@ function Wheel({
       </div>
       <div className={`ph-conn ph-conn-${status}`}>{statusText(status)}</div>
       {hint && <div className="ph-sensor-hint">{hint}</div>}
+    </div>
+  );
+}
+
+/** The lesson's debrief on the phone: result, summary and the worst three faults. */
+function ReportCard({ report, onClose }: { report: HostReport; onClose: () => void }) {
+  const top = [...report.faults].sort((a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity] || b.count - a.count).slice(0, 3);
+  const pass = report.result === 'pass';
+  return (
+    <div className="ph-report" role="dialog" aria-label="Lesson report">
+      <div className="ph-report-card">
+        <div className={`ph-report-result ${pass ? 'ph-pass' : 'ph-fail'}`}>
+          <span className="ph-report-kicker">Mock test result</span>
+          {pass ? 'PASS' : 'FAIL'}
+        </div>
+        <div className="ph-report-body">
+          <p className="ph-report-summary">{report.summary}</p>
+          {top.length > 0 ? (
+            <ul className="ph-report-faults">
+              {top.map((f) => (
+                <li key={f.category}>
+                  <span className={`ph-sev ph-sev-${f.severity}`}>{f.severity}</span>
+                  <span className="ph-report-cat">{f.category}</span>
+                  <span className="ph-report-count">×{f.count}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="ph-report-clean">No faults recorded. Nice driving.</p>
+          )}
+          <p className="ph-report-source">{report.source === 'nebius' ? 'Debrief by the Nebius examiner model' : 'Offline debrief (Nebius unavailable)'}</p>
+          <button className="ph-report-close" onClick={onClose}>
+            Close
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

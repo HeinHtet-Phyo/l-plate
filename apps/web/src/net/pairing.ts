@@ -107,7 +107,12 @@ export class HostLink {
   }
 
   sendState(s: Extract<HostMessage, { type: 'state' }>) {
-    if (this.ws?.readyState === 1 && this.phoneConnected) this.ws.send(JSON.stringify(s));
+    this.send(s);
+  }
+
+  /** Any host → phone message; dropped when no phone is connected. */
+  send(m: HostMessage) {
+    if (this.ws?.readyState === 1 && this.phoneConnected) this.ws.send(JSON.stringify(m));
   }
 
   controllerUrl(base: string): string | null {

@@ -23,11 +23,14 @@ interface Session {
 /** Message types each role may send; everything else is dropped. */
 export const ALLOWED: Record<Role, Set<string>> = {
   controller: new Set(['controls', 'command', 'sensor', 'ping']),
-  host: new Set(['state', 'ping']),
+  host: new Set(['state', 'fault', 'report', 'ping']),
 };
 
 const COMMANDS = new Set(['indicator-left', 'indicator-right', 'handbrake', 'recover', 'reverse']);
 const SENSORS = new Set(['ok', 'flat', 'denied', 'unavailable']);
+
+const SEVERITIES = new Set(['driving', 'serious', 'dangerous']);
+const str = (v: unknown, max: number) => (typeof v === 'string' ? v.slice(0, max) : '');
 
 const token = () => randomBytes(16).toString('base64url');
 const num = (v: unknown, lo: number, hi: number) => typeof v === 'number' && Number.isFinite(v) && v >= lo && v <= hi;
@@ -52,6 +55,21 @@ export function sanitize(role: Role, msg: any): Record<string, unknown> | null {
         speedMph: num(msg.speedMph, 0, 300) ? Math.round(msg.speedMph) : 0,
         driving: !!msg.driving,
         gear: msg.gear === 'R' ? 'R' : 'D',
+      };
+    case 'fault':
+      return { type: 'fault', category: str(msg.category, 80), text: str(msg.text, 160), serious: !!msg.serious };
+    case 'report':
+      if (msg.result !== 'pass' && msg.result !== 'fail') return null;
+      return {
+        type: 'report',
+        result: msg.result,
+        summary: str(msg.summary, 600),
+        faults: (Array.isArray(msg.faults) ? msg.faults : []).slice(0, 12).map((f: any) => ({
+          category: str(f?.category, 80),
+          severity: SEVERITIES.has(f?.severity) ? f.severity : 'driving',
+          count: num(f?.count, 0, 99) ? Math.round(f.count) : 0,
+        })),
+        source: msg.source === 'nebius' ? 'nebius' : 'offline',
       };
     case 'ping':
       return { type: 'ping' };

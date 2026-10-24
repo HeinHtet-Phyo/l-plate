@@ -4,6 +4,7 @@ import type { Session } from '../sim/session.ts';
 import type { GpuInfo } from '../sim/gpu.ts';
 import type { HostLink } from '../net/pairing.ts';
 import { PhonePanel } from './PhonePanel.tsx';
+import { Referee } from '../referee/Referee.tsx';
 
 export const KEYS: [string, string][] = [
   ['W / ↑', 'accelerate'],
@@ -46,6 +47,7 @@ function NavArrow({ type, modifier, exit }: { type?: string; modifier?: string; 
 export function Hud({ session, gpu, host, onExit, onRestart, attribution, infill }: { session: Session; gpu: GpuInfo; host: HostLink | null; onExit: () => void; onRestart: () => void; attribution: string; infill: boolean }) {
   const s = useSyncExternalStore(session.subscribe, session.getSnapshot);
   const [typed, setTyped] = useState('');
+  const [referee, setReferee] = useState(false);
   const c = session.conditions;
 
   useEffect(() => {
@@ -184,6 +186,12 @@ export function Hud({ session, gpu, host, onExit, onRestart, attribution, infill
 
       {s.instructorNote && s.instructor === 'unavailable' && <div className="note">{s.instructorNote}</div>}
 
+      {referee && session.debriefRequest && (
+        <div className="ref-overlay">
+          <Referee request={session.debriefRequest} onClose={() => setReferee(false)} />
+        </div>
+      )}
+
       {s.finished && (
         <div className="overlay">
           <div className="panel summary">
@@ -236,6 +244,7 @@ export function Hud({ session, gpu, host, onExit, onRestart, attribution, infill
                   <button className="primary" onClick={onRestart}>
                     Drive again
                   </button>
+                  {session.debriefRequest && <button onClick={() => setReferee(true)}>Compare examiner models</button>}
                   <button onClick={onExit}>Back to menu</button>
                 </div>
               </>

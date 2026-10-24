@@ -1,6 +1,6 @@
 // A driving session: builds the city from an extract, runs the fixed-step sim, routes events to
 // faults, the coach and Sam, and publishes a HUD snapshot ~10×/s for useSyncExternalStore.
-import type { ChatTurn, Debrief, DrivingStatus, FaultRecord, Indicator, TestRoute } from '@lplate/shared';
+import type { ChatTurn, Debrief, DebriefRequest, DrivingStatus, FaultRecord, Indicator, TestRoute } from '@lplate/shared';
 import { angleDiff, clamp, project } from './geo.ts';
 import type { OsmExtract } from './osm.ts';
 import { RoadNetwork } from './roads.ts';
@@ -124,6 +124,8 @@ export class Session {
   private finished = false;
   private debrief: Debrief | null = null;
   private debriefLoading = false;
+  /** The fault log sent to the examiner, kept so the model referee can replay it. */
+  debriefRequest: DebriefRequest | null = null;
   private showHelp = false;
   private showDebug = false;
   private showPhone = false;
@@ -406,6 +408,7 @@ export class Session {
       faults: this.faults.faults,
       stats: { distance: this.distance, duration: this.time, maxSpeedOverLimit: Math.max(0, this.faults.maxOverLimit) },
     };
+    this.debriefRequest = body;
     try {
       const res = await fetch('/api/debrief', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       this.debrief = (await res.json()) as Debrief;
@@ -414,6 +417,10 @@ export class Session {
     }
     this.debriefLoading = false;
     this.publish(true);
+    if (this.debrief) {
+      const d = this.debrief;
+      this.setup.host?.send({ type: 'report', result: d.result, summary: d.summary, faults: d.faults.map(({ category, severity, count }) => ({ category, severity, count })), source: d.source });
+    }
     if (this.debrief && this.instructorState === 'on') {
       this.voice.say(`${this.debrief.result === 'pass' ? 'That would be a pass.' : "I'm afraid that would be a fail."} ${this.debrief.summary}`);
     }
@@ -554,6 +561,7 @@ export class Session {
     });
     const drained = this.faults.drain();
     for (const f of drained.faults) {
+      this.setup.host?.send({ type: 'fault', category: f.category, text: f.text, serious: f.kind === 'collision' || f.kind === 'redLight' });
       if (f.kind === 'signal' || f.kind === 'wrongSignal' || f.kind === 'speeding' || f.kind === 'centreLine') this.toast(`${f.text} · ${f.category}`);
       this.coach.push('fault', `Fault (${f.category}): ${f.text}${f.road ? ` on ${f.road}` : ''}. Give one short, calm piece of feedback.`, this.time);
     }

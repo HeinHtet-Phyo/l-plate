@@ -3,6 +3,8 @@ import type { ControllerMessage, HostMessage, SensorStatus, ServerMessage } from
 import { wsUrl } from '../net/pairing.ts';
 
 export type HostState = Extract<HostMessage, { type: 'state' }>;
+export type HostFault = Extract<HostMessage, { type: 'fault' }>;
+export type HostReport = Extract<HostMessage, { type: 'report' }>;
 export type LinkStatus = 'connecting' | 'waiting' | 'paired' | 'replaced' | 'expired';
 
 /** Session ID and token from a /c/:session?t=… URL. */
@@ -15,12 +17,16 @@ export function parseControllerUrl(loc: Location = location): { session: string;
 export class ControllerLink {
   status: LinkStatus = 'connecting';
   host: HostState | null = null;
+  /** The last lesson's debrief; cleared when the next lesson starts driving. */
+  report: HostReport | null = null;
   onChange: () => void = () => {};
+  onFault: (f: HostFault) => void = () => {};
   private ws: WebSocket | null = null;
   private closed = false;
   private retry: number | undefined;
   private ping: number | undefined;
   private sensor: SensorStatus | null = null;
+  private reportAt = 0;
 
   constructor(
     private session: string,
@@ -59,6 +65,13 @@ export class ControllerLink {
         this.set((m as { connected: boolean }).connected ? 'paired' : 'waiting');
       } else if (m.type === 'state') {
         this.host = m as HostState;
+        if (this.report && this.reportAt && performance.now() - this.reportAt > 3000 && this.host.driving && this.host.speedMph > 0) this.report = null;
+        this.onChange();
+      } else if (m.type === 'fault') {
+        this.onFault(m as HostFault);
+      } else if (m.type === 'report') {
+        this.report = m as HostReport;
+        this.reportAt = performance.now();
         this.onChange();
       } else if (m.type === 'replaced') {
         // Another phone scanned the code; don't fight it for the session.

@@ -1,0 +1,55 @@
+/* Model referee: one card per examiner model, scored against the DVSA rule. */
+.ref-page { position: fixed; inset: 0; overflow: auto; background: var(--bg); color: var(--text); padding: 20px 16px; }
+.ref-overlay { position: fixed; inset: 0; z-index: 50; overflow: auto; background: rgba(8, 10, 14, 0.94); padding: 20px 16px; }
+.ref { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+
+.ref-head { display: grid; grid-template-columns: 1fr auto auto; gap: 16px; align-items: center; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+.ref-head h2 { margin: 0 0 4px; font-size: 1.5rem; }
+.ref-head p { margin: 0; }
+.ref-verdict { display: flex; flex-direction: column; align-items: center; padding: 8px 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel-solid); min-width: 170px; text-align: center; font-size: 0.82rem; }
+.ref-verdict .result { font-size: 1.8rem; line-height: 1.1; }
+.ref-actions { display: flex; gap: 8px; }
+
+.ref-loading { text-align: center; padding: 48px 0; }
+.ref-loading p { margin: 4px 0; }
+.ref-error { padding: 14px 16px; border: 1px solid var(--bad); border-radius: 12px; background: rgba(229, 72, 77, 0.1); }
+
+.ref-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; align-items: start; }
+.ref-card { background: var(--panel-solid); border: 1px solid var(--line); border-top: 4px solid var(--line); border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+.ref-card.good { border-top-color: var(--good); }
+.ref-card.mid { border-top-color: var(--amber); }
+.ref-card.bad { border-top-color: var(--bad); }
+.ref-card.failed { opacity: 0.6; border-top-color: #4a515c; }
+.ref-card-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.ref-card h3 { margin: 0; font-size: 1.08rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ref-score { flex: none; min-width: 52px; text-align: center; padding: 4px 10px; border-radius: 999px; font-weight: 800; font-size: 1.15rem; font-variant-numeric: tabular-nums; }
+.ref-score.good { background: rgba(60, 196, 124, 0.18); color: var(--good); }
+.ref-score.mid { background: rgba(240, 160, 32, 0.18); color: var(--amber); }
+.ref-score.bad { background: rgba(229, 72, 77, 0.18); color: var(--bad); }
+.small { font-size: 0.82rem; margin: 0; }
+
+.ref-model-verdict { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.ref-model-verdict .result { font-size: 1.5rem; }
+.ref-model-verdict .ok { color: var(--good); font-weight: 600; }
+.ref-model-verdict .no { color: var(--bad); font-weight: 600; }
+
+.ref-checks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; font-size: 0.9rem; }
+.ref-checks li span { display: inline-block; width: 1.2em; font-weight: 800; }
+.ref-checks li.ok span { color: var(--good); }
+.ref-checks li.no { color: #ffb4b6; }
+.ref-checks li.no span { color: var(--bad); }
+.ref-invented { margin: 0; padding: 8px 12px 8px 28px; border-radius: 8px; background: rgba(229, 72, 77, 0.12); color: var(--bad); font-weight: 700; font-size: 0.9rem; }
+.ref-fail { margin: 0; color: var(--amber); }
+
+.ref-details summary { cursor: pointer; color: var(--muted); font-size: 0.88rem; }
+.ref-details p { font-size: 0.9rem; }
+
+.ref-foot { border-top: 1px solid var(--line); padding-top: 12px; }
+.ref-foot p { margin: 4px 0; }
+.ref-takeaway { font-size: 1.1rem; font-weight: 600; }
+
+@media (max-width: 760px) {
+  .ref-head { grid-template-columns: 1fr; }
+  .ref-verdict { flex-direction: row; gap: 10px; justify-content: center; }
+  .ref-actions button { flex: 1; }
+}

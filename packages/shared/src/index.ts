@@ -102,6 +102,16 @@ export type HostMessage =
       driving: boolean;
       gear: Gear;
     }
+  /** A fault just happened: the phone buzzes (long for serious) and flashes it. */
+  | { type: 'fault'; category: string; text: string; serious: boolean }
+  /** The lesson's debrief, shown on the phone as a report card. */
+  | {
+      type: 'report';
+      result: 'pass' | 'fail';
+      summary: string;
+      faults: { category: string; severity: Severity; count: number }[];
+      source: 'nebius' | 'offline';
+    }
   | { type: 'ping' };
 
 export type ServerMessage =
@@ -178,4 +188,47 @@ export interface RuleHit {
   title: string;
   text: string;
   score: number;
+}
+
+// ---------- Model referee ----------
+
+/** The same drive log sent to several examiner models, scored against the DVSA rule. */
+export interface RefereeRequest extends DebriefRequest {
+  models?: string[];
+}
+
+export interface RefereeChecks {
+  /** The reply parsed as JSON and matched the debrief schema. */
+  validJson: boolean;
+  /** The model's own PASS/FAIL. */
+  verdict: 'pass' | 'fail' | null;
+  /** Its verdict equals the rule-based reference for this fault log. */
+  verdictMatchesRule: boolean;
+  /** Its verdict follows the DVSA rule applied to its own severities. */
+  selfConsistent: boolean;
+  faultCountModel: number;
+  faultCountLog: number;
+  /** "Rule N" citations that aren't in the Highway Code (307 rules). */
+  inventedRules: string[];
+  citedRules: string[];
+}
+
+export interface RefereeEntry {
+  model: string;
+  ok: boolean;
+  error?: string;
+  ms: number;
+  tokens: { prompt: number; completion: number } | null;
+  /** The model's raw debrief, before the server's guards rewrite it. */
+  debrief: Omit<Debrief, 'source'> | null;
+  checks: RefereeChecks;
+  /** 0–100: valid JSON, right verdict, self-consistent, counts match, no invented rules. */
+  score: number;
+}
+
+export interface RefereeResponse {
+  /** Rule-based verdict for this fault log: the ground truth. */
+  reference: 'pass' | 'fail';
+  faultCount: number;
+  entries: RefereeEntry[];
 }

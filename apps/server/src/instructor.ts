@@ -161,12 +161,17 @@ export function ruleBasedDebrief(req: DebriefRequest): Debrief {
   };
 }
 
-export async function nebiusDebrief(client: NebiusClient, model: string, req: DebriefRequest, rules: RuleHit[] = []): Promise<Debrief> {
+/** The examiner's user message: route, stats, fault log, and any quoted Highway Code rules. */
+export function debriefUserPrompt(req: DebriefRequest, rules: RuleHit[] = []): string {
   const faultLines = req.faults.map((f) => `- ${f.category}: ${f.text} (${f.road || 'unknown road'}, ${Math.round(f.time)} s in)`).join('\n') || '- none';
-  const user = `Route: ${req.route}
+  return `Route: ${req.route}
 Distance: ${(req.stats.distance / 1609).toFixed(1)} miles, duration ${Math.round(req.stats.duration / 60)} min, max speed over limit: ${req.stats.maxSpeedOverLimit.toFixed(0)} mph.
 Fault log:
 ${faultLines}${rules.length ? `\nHighway Code rules:\n${rules.map((r) => `Rule ${r.rule}: ${r.text.slice(0, 240)}`).join('\n')}` : ''}`;
+}
+
+export async function nebiusDebrief(client: NebiusClient, model: string, req: DebriefRequest, rules: RuleHit[] = []): Promise<Debrief> {
+  const user = debriefUserPrompt(req, rules);
   const res = await client.chat({
     model,
     temperature: 0.2,

@@ -69,6 +69,30 @@ describe('sanitize', () => {
   });
 });
 
+describe('sanitize fault and report', () => {
+  it('clamps fault text and coerces serious', () => {
+    const f = sanitize('host', { type: 'fault', category: 'c'.repeat(200), text: 't'.repeat(300), serious: 'yes', evil: 1 });
+    expect(f).toEqual({ type: 'fault', category: 'c'.repeat(80), text: 't'.repeat(160), serious: true });
+    expect(sanitize('controller', { type: 'fault', category: 'x', text: 'y', serious: false })).toBeNull();
+  });
+
+  it('validates reports', () => {
+    expect(sanitize('host', { type: 'report', result: 'maybe', summary: 'x', faults: [] })).toBeNull();
+    const r = sanitize('host', {
+      type: 'report',
+      result: 'fail',
+      summary: 's'.repeat(900),
+      faults: [{ category: 'Speed', severity: 'catastrophic', count: 3.4 }, { category: 'Signals', severity: 'serious', count: 500 }, ...Array(20).fill({ category: 'x', severity: 'driving', count: 1 })],
+      source: 'cloud',
+    }) as any;
+    expect(r.summary).toHaveLength(600);
+    expect(r.faults).toHaveLength(12);
+    expect(r.faults[0]).toEqual({ category: 'Speed', severity: 'driving', count: 3 });
+    expect(r.faults[1]).toEqual({ category: 'Signals', severity: 'serious', count: 0 });
+    expect(r.source).toBe('offline');
+  });
+});
+
 describe('Relay', () => {
   it('pairs with distinct tokens', () => {
     const r = new Relay();
