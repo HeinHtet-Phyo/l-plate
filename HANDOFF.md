@@ -62,7 +62,7 @@ Last updated: 2026-10-24 14:28 by @jai-matharu
 
 ### @jai-matharu
 - **Status:** in progress. Done: typecheck clean; Vitest 85 web + 44 server tests (`pnpm test`); `scripts/scan-secrets.ts`; `scripts/build-rules.ts` + `apps/server/data/highway-code.json` (307 rules); README; first headless Goodmayes check passed (M1 GPU, Sam speaking).
-- **Working on:** Belvedere OSM refetch + per-area stats (`scripts/osm-stats.ts`)
+- **Working on:** PR #2 (§5). Belvedere refetch skipped by decision (extract still empty; don't demo that route)
 - **Next:** final §21 headless checks + screenshots in the last 30 min. Known bug for sim owner: `friendlyGpuName` splits on commas inside "(radeonsi, …)" (test marked `.fails`).
 - **Branch:** jai (PR into main)
 - **Updated:** 2026-10-24 14:28
