@@ -25,7 +25,7 @@ The goal is *a working example with a clear purpose*. The demo must show **what 
 
 - Get one end-to-end path working before adding features. Judging starts 16:30.
 - Keep a log of model failures as you go (wrong tool call, bad JSON, hallucinated source,
-  slow response). These belong in the demo; don't hide them.
+  slow response). These belong in the demo; don't hide them. Log them in `docs/MODEL_FAILURES.md` (`/log-failure`).
 - Model IDs live in one config constant, so swapping or comparing models is a one-line change.
 
 ## Setup

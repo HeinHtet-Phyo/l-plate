@@ -7,6 +7,20 @@
     "playwright@claude-plugins-official": true,
     "commit-commands@claude-plugins-official": true
   },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-start.sh\"",
+            "timeout": 20
+          }
+        ]
+      }
+    ]
+  },
   "extraKnownMarketplaces": {
     "nebius": {
       "source": {

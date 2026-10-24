@@ -1,0 +1,6 @@
+# Append-only team logs: when two people append at once, keep both sides instead of conflicting.
+docs/DECISIONS.md merge=union
+docs/MODEL_FAILURES.md merge=union
+
+# Keep hook scripts LF so they run under macOS, Linux and Git Bash on Windows.
+*.sh text eol=lf
