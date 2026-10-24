@@ -1,16 +1,34 @@
-// Automatic hatchback as a kinematic bicycle model. Pose is the driver's eye point.
+// Automatic hatchback: kinematic bicycle model with pedal lag, a power-limited engine, real resistances,
+// understeer and a grip limit. Pose is the driver's eye point.
 import { DEG, clamp, headingVec } from './geo.ts';
 
 export const VEHICLE = {
   wheelbase: 2.6,
   maxWheelAngle: 35,
   steeringRatio: 13.5,
+  /** Traction-limited launch (m/s²); above ~28 mph power runs out: a = power / v. */
   maxAccel: 3.2,
+  /** Wheel power per kg (W/kg) after losses: ~100 hp hatchback, 0–60 mph in about 12 s. */
+  power: 46,
   maxBrake: 8.5,
+  /** Brake pedal curve: light presses slow gently, full press stops hard. */
+  brakeCurve: 1.4,
   handbrake: 4,
-  rolling: 0.25,
-  drag: 0.00045,
-  engineBraking: 0.6,
+  /** Rolling resistance (Crr 0.012 × g) and aero drag (½ρCdA/m) in m/s². */
+  rolling: 0.12,
+  drag: 0.0007,
+  /** Off-throttle engine braking in D: base + per m/s. */
+  engineBraking: 0.2,
+  engineBrakingPerMs: 0.025,
+  /** Pedal response time constants (s): engines spool, brakes bite quickly. */
+  throttleUp: 0.35,
+  throttleDown: 0.15,
+  brakeUp: 0.12,
+  brakeDown: 0.1,
+  /** Understeer gradient (s²/m²): the turn widens a little as speed rises. */
+  understeer: 0.0006,
+  /** Tyre grip: lateral acceleration can't exceed ~0.85 g on dry tarmac. */
+  maxLateral: 8.3,
   creepSpeed: 1.6,
   creepAccel: 0.9,
   /** Reverse gear: gentle, capped around 11 mph. */
@@ -46,6 +64,9 @@ export class Vehicle {
   /** Smoothed steering −1…1. */
   steer = 0;
   accel = 0;
+  /** Pedal positions after actuator lag (0…1). */
+  throttleIn = 0;
+  brakeIn = 0;
 
   /** Car centre from eye. */
   centre(): [number, number] {
@@ -81,10 +102,14 @@ export class Vehicle {
 
   private alongGear(c: Controls, v: number): number {
     let a = 0;
-    const top = this.reverse ? VEHICLE.maxReverseSpeed : 50;
-    if (!this.handbrake && c.throttle > 0) a += VEHICLE.maxAccel * (this.reverse ? 0.5 : 1) * c.throttle * Math.max(0, 1 - v / top);
-    let resist = VEHICLE.rolling + VEHICLE.drag * v * v + c.brake * VEHICLE.maxBrake;
-    if (c.throttle <= 0) resist += VEHICLE.engineBraking;
+    if (!this.handbrake && c.throttle > 0) {
+      // Traction-limited at low speed, power-limited above; reverse is a short, gentle gear.
+      const drive = Math.min(VEHICLE.maxAccel, VEHICLE.power / Math.max(0.1, v));
+      const cap = this.reverse ? Math.max(0, 1 - v / VEHICLE.maxReverseSpeed) : 1;
+      a += drive * (this.reverse ? 0.5 : 1) * c.throttle * cap;
+    }
+    let resist = VEHICLE.rolling + VEHICLE.drag * v * v + c.brake ** VEHICLE.brakeCurve * VEHICLE.maxBrake;
+    if (c.throttle <= 0) resist += VEHICLE.engineBraking + VEHICLE.engineBrakingPerMs * v;
     if (this.handbrake) resist += VEHICLE.handbrake;
     // Idle creep: forward up to 1.6 m/s when nothing is pressed and the handbrake is off.
     if (!this.handbrake && c.throttle <= 0 && c.brake <= 0 && v < VEHICLE.creepSpeed) {
@@ -96,7 +121,14 @@ export class Vehicle {
 
   /** Advance the pose; returns the proposed new eye position and heading (not applied). */
   propose(c: Controls, dt: number): { x: number; z: number; heading: number; speed: number } {
-    const a = this.longitudinal(c);
+    // Pedals don't act instantly: ease toward the driver's input.
+    const ease = (cur: number, target: number, up: number, down: number) =>
+      cur + (target - cur) * Math.min(1, dt / (target > cur ? up : down));
+    this.throttleIn = ease(this.throttleIn, c.throttle, VEHICLE.throttleUp, VEHICLE.throttleDown);
+    this.brakeIn = ease(this.brakeIn, c.brake, VEHICLE.brakeUp, VEHICLE.brakeDown);
+    // Snap tiny residues to zero so idle creep and engine braking still kick in.
+    const pedals: Controls = { steer: c.steer, throttle: this.throttleIn < 0.01 ? 0 : this.throttleIn, brake: this.brakeIn < 0.01 ? 0 : this.brakeIn };
+    const a = this.longitudinal(pedals);
     let v = this.speed + a * dt;
     // Resistance never pushes the car against its gear.
     if (!this.reverse && v < 0) v = 0;
@@ -104,7 +136,10 @@ export class Vehicle {
     this.accel = (v - this.speed) / dt;
     const vm = (this.speed + v) / 2;
     const delta = this.wheelAngle() * DEG;
-    const yawRate = (vm / VEHICLE.wheelbase) * Math.tan(delta);
+    // Understeer widens the turn with speed; tyre grip caps lateral acceleration (yaw × speed).
+    let yawRate = ((vm / VEHICLE.wheelbase) * Math.tan(delta)) / (1 + VEHICLE.understeer * vm * vm);
+    const maxYaw = VEHICLE.maxLateral / Math.max(0.5, Math.abs(vm));
+    yawRate = clamp(yawRate, -maxYaw, maxYaw);
     const h = this.heading + (yawRate * dt) / DEG;
     // Integrate the rear axle along the mean heading, then rebuild the eye.
     const [cx, cz] = this.centre();
@@ -121,17 +156,24 @@ export class Vehicle {
     return { x: ncx - dz1 * VEHICLE.eyeRight, z: ncz + dx1 * VEHICLE.eyeRight, heading: ((h % 360) + 360) % 360, speed: v };
   }
 
-  /** Smooth steering toward the target: keyboard ramps ~1.5/s, recentres ~3/s; phone is absolute. */
+  /**
+   * Smooth steering toward the target. Phone is absolute. Keyboard ramps ~1.5/s when parked, slower and with
+   * less lock at speed (like a real driver at 30 mph), and recentres faster as speed adds self-aligning torque.
+   */
   updateSteer(target: number, absolute: boolean, dt: number) {
     if (absolute) {
       this.steer = clamp(target, -1, 1);
       return;
     }
+    const v = Math.abs(this.speed);
     if (target === 0) {
-      const d = Math.min(Math.abs(this.steer), 3 * dt);
+      const d = Math.min(Math.abs(this.steer), (3 + 0.2 * v) * dt);
       this.steer -= Math.sign(this.steer) * d;
     } else {
-      this.steer = clamp(this.steer + Math.sign(target - this.steer) * Math.min(Math.abs(target - this.steer), 1.5 * dt), -1, 1);
+      const lock = 1 / (1 + (v / 12) ** 2);
+      const goal = clamp(target, -1, 1) * Math.max(0.25, lock);
+      const rate = 1.5 / (1 + v / 15);
+      this.steer = clamp(this.steer + Math.sign(goal - this.steer) * Math.min(Math.abs(goal - this.steer), rate * dt), -1, 1);
     }
   }
 

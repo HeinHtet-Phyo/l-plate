@@ -68,3 +68,6 @@
 - **Alternatives:** wait for Aryaan's atmosphere (blocks the city); put real THREE lights at 3,000 lamps (far too slow).
 - **Affects:** @Aryaan2303 (atmosphere: please use the same lamp map uv convention), @christopherwhite06 (integration). Note that Chris's build decisions are in the root `DECISIONS.md`.
 
+
+## 2026-10-24: More realistic car handling (@jai-matharu)
+- `sim/vehicle.ts` keeps the kinematic bicycle model but adds pedal lag (throttle 0.35 s, brake 0.12 s), a power-limited engine (~100 hp hatchback: 0–30 mph ≈ 5 s, 0–60 ≈ 12 s, ~85 mph top), real rolling/aero resistance, speed-dependent engine braking, a progressive brake pedal (stops from 30 mph in ~11 m), understeer, and a 0.85 g grip limit. Keyboard steering now uses less lock and turns more slowly at speed. Why: the car felt like it was on rails, launched instantly, and the keyboard snapped to full lock at 30 mph. A full dynamic tyre model was rejected as too risky before judging.

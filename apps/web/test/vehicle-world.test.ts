@@ -59,6 +59,89 @@ describe('Vehicle', () => {
   });
 });
 
+describe('Vehicle realism', () => {
+  const dt = 1 / 60;
+  const step = (v: Vehicle, c: typeof idle) => Object.assign(v, v.propose(c, dt));
+
+  it('accelerates like a small hatchback: 0–30 mph in ~4–6 s, 0–60 mph in ~10–14 s, tops out around 80–95 mph', () => {
+    const v = new Vehicle();
+    v.handbrake = false;
+    let t = 0;
+    let t30 = 0;
+    let t60 = 0;
+    while (t < 60) {
+      step(v, go);
+      t += dt;
+      if (!t30 && v.speed > 13.41) t30 = t;
+      if (!t60 && v.speed > 26.82) t60 = t;
+    }
+    expect(t30).toBeGreaterThan(4);
+    expect(t30).toBeLessThan(6);
+    expect(t60).toBeGreaterThan(10);
+    expect(t60).toBeLessThan(14);
+    expect(v.speed * 2.237).toBeGreaterThan(80);
+    expect(v.speed * 2.237).toBeLessThan(95);
+  });
+
+  it('pedals respond with a short lag, not instantly', () => {
+    const v = new Vehicle();
+    v.handbrake = false;
+    v.speed = 5;
+    v.propose(go, dt);
+    expect(v.throttleIn).toBeLessThan(0.1);
+    for (let i = 0; i < 60; i++) step(v, go);
+    expect(v.throttleIn).toBeGreaterThan(0.9);
+  });
+
+  it('stops from 30 mph within the Highway Code braking distance (14 m)', () => {
+    const v = new Vehicle();
+    v.handbrake = false;
+    v.speed = 13.41;
+    let d = 0;
+    while (v.speed > 0) {
+      const p = v.propose({ steer: 0, throttle: 0, brake: 1 }, dt);
+      d += Math.hypot(p.x - v.x, p.z - v.z);
+      Object.assign(v, p);
+    }
+    expect(d).toBeGreaterThan(8);
+    expect(d).toBeLessThan(14);
+  });
+
+  it('a light brake press slows gently', () => {
+    const v = new Vehicle();
+    v.handbrake = false;
+    v.speed = 13.41;
+    for (let i = 0; i < 60; i++) step(v, { steer: 0, throttle: 0, brake: 0.3 });
+    expect(v.speed).toBeGreaterThan(10);
+  });
+
+  it('cannot corner harder than the tyres allow (~0.85 g)', () => {
+    for (const mph of [30, 50]) {
+      const v = new Vehicle();
+      v.handbrake = false;
+      v.speed = mph / 2.237;
+      v.steer = 1;
+      const h0 = v.heading;
+      Object.assign(v, v.propose({ steer: 1, throttle: 0.3, brake: 0 }, 0.1));
+      const yaw = (((v.heading - h0) / 0.1) * Math.PI) / 180;
+      expect((yaw * v.speed) / 9.81).toBeLessThanOrEqual(0.86);
+    }
+  });
+
+  it('keyboard steering uses less lock and turns slower at speed', () => {
+    const parked = new Vehicle();
+    const moving = new Vehicle();
+    moving.speed = 13.4;
+    for (let i = 0; i < 120; i++) {
+      parked.updateSteer(1, false, dt);
+      moving.updateSteer(1, false, dt);
+    }
+    expect(parked.steer).toBe(1);
+    expect(moving.steer).toBeLessThan(0.5);
+    expect(moving.steer).toBeGreaterThan(0.25);
+  });
+});
+
 describe('obbOverlap', () => {
   it('detects overlap of rotated boxes', () => {
     expect(obbOverlap(0, 0, 0, 2, 1, 0, 3, 0, 2, 1)).toBe(true);
