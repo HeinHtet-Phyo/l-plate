@@ -91,6 +91,7 @@ export function buildApp() {
       req.log.info({ ms: Date.now() - t0, model: MODEL_INSTRUCTOR }, 'instructor reply');
       return { text, model: MODEL_INSTRUCTOR, ms: Date.now() - t0 };
     } catch (e) {
+      req.log.warn({ err: (e as Error).message }, 'instructor failed');
       const status = e instanceof NebiusError && e.status ? e.status : 502;
       return reply.code(status === 401 || status === 402 ? status : 502).send({ error: (e as Error).message, text: '' });
     }
@@ -101,7 +102,7 @@ export function buildApp() {
     const safe: DebriefRequest = {
       route: String(body?.route ?? 'the drive').slice(0, 120),
       faults: Array.isArray(body?.faults) ? body.faults.slice(0, 200) : [],
-      stats: { distance: 0, duration: 0, maxSpeedOverLimit: 0, ...(body?.stats ?? {}) },
+      stats: Object.assign({ distance: 0, duration: 0, maxSpeedOverLimit: 0 }, body?.stats ?? {}),
     };
     if (!nebius) return { ...ruleBasedDebrief(safe), error: 'No NEBIUS_API_KEY: offline debrief' };
     try {
