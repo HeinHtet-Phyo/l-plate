@@ -4,7 +4,7 @@
 > **Edit only your own lane.** In the shared sections, change single lines; don't reorder or rewrite.
 > Keep this file under ~150 lines. Details belong in `docs/sessions/`.
 
-Last updated: 2026-10-24 13:58 by @minthantkyaw28
+Last updated: 2026-10-24 15:10 by @christopherwhite06
 
 ## Snapshot
 
@@ -37,20 +37,20 @@ Last updated: 2026-10-24 13:58 by @minthantkyaw28
 - **Log:** `docs/sessions/2026-10-24-1133-minthantkyaw28-agent-memory-system.md`
 
 ### @christopherwhite06
-- **Status:** in progress. Pushed the L-Plate base: pnpm workspace (`apps/web`, `apps/server`, `packages/shared`), OSM data for all 9 areas + 5 test routes, server (phone relay, Nebius instructor + examiner debrief, reroute), browser sim core. **Work split: `TEAM-PLAN.md`.**
-- **Working on:** app shell, render loop, HUD, menu, integration (TEAM-PLAN §1). Target: `?route=goodmayes` end to end by 16:30.
+- **Status:** in progress. App shell done and pushed: menu, drive screen (two-pass render loop, adaptive dpr), HUD, lesson summary with Nebius debrief, phone QR panel. `?route=goodmayes` drives end to end at 60 fps with fallback visuals; your render modules replace the fallbacks automatically when merged (`apps/web/src/app/parts.ts`).
+- **Working on:** integration and polish; merging your PRs. Run it: server `PORT=8090 pnpm --filter @lplate/server dev`, web `SERVER_PORT=8090 pnpm --filter @lplate/web dev -- --port 5174`.
 - **Next:** merge Min/Hein/Aryaan/Jai PRs as they land
 - **Branch:** main
-- **Updated:** 2026-10-24 14:05
+- **Updated:** 2026-10-24 15:10
 - **Log:** `DECISIONS.md`, `docs/MODEL-NOTES.md`
 
 ### @HeinHtet-Phyo
-- **Status:** in progress
-- **Working on:** L-Plate step 1: phone-to-laptop controller (QR pairing + WebSocket relay), in `app/`
-- **Next:** step 2, a simple 3D road and car driven by the phone
-- **Branch:** main
-- **Updated:** 2026-10-24 12:50
-- **Log:** none yet
+- **Status:** phone page and cabin done; **merged into `main`** by @christopherwhite06 (picked up automatically via `app/parts.ts` and `main.tsx`).
+- **Working on:** nothing; ready for integration
+- **Next:** Chris: (1) lazy-load `apps/web/src/phone/PhonePage.tsx` (default export) for `/c/*`; (2) `import { createCabin } from './render/cabin/index.ts'` and follow the TEAM-PLAN render loop (`cabin.update(s, dt, worldCam)`, `cabin.renderMirrors(gl, scene, frame)`, then a second pass after `clearDepth`). Merge `hein` into `main`, or tell me to open a PR. Optional: Google map overlay (§11).
+- **Branch:** `hein`
+- **Updated:** 2026-10-24 14:05
+- **Log:** `docs/sessions/2026-10-24-1325-HeinHtet-Phyo-phone-controller.md`
 
 ### @Aryaan2303
 - **Status:** not started
@@ -71,4 +71,5 @@ Last updated: 2026-10-24 13:58 by @minthantkyaw28
 ## Blockers / questions for the humans
 
 <!-- Format: - [@who] question or blocker (since HH:MM) -->
-- None yet.
+- [@minthantkyaw28] @christopherwhite06: `docs/SPEC.md` isn't in the repo, but every § number in `TEAM-PLAN.md` points to it. Please push it (since 14:08)
+- [@minthantkyaw28] @christopherwhite06: notes are splitting in two. Root `DECISIONS.md` vs `docs/DECISIONS.md`, and `docs/MODEL-NOTES.md` vs `docs/MODEL_FAILURES.md` (the `demo-prep` skill reads the `docs/` ones). I copied the 4 MODEL-NOTES failures into `docs/MODEL_FAILURES.md`; please log new ones there (since 14:08)

@@ -16,11 +16,13 @@
 
 | GitHub | Focus |
 |---|---|
-| @minthantkyaw28 | TBD |
-| @christopherwhite06 | TBD |
-| @HeinHtet-Phyo | TBD |
-| @Aryaan2303 | TBD |
-| @jai-matharu | TBD |
+| @minthantkyaw28 | City renderer: road surface, markings, buildings, trees, parked cars, streetlights, signals (`apps/web/src/render/city/**`) |
+| @christopherwhite06 | App shell, render loop, HUD, menu, integration; merges PRs |
+| @HeinHtet-Phyo | Phone controller page, then cabin, mirrors, sat nav screen, windscreen rain |
+| @Aryaan2303 | Sky, lights, weather, night, AI-traffic meshes |
+| @jai-matharu | Tests, typecheck/build, server extras, data, README |
+
+Work split and the contract between render sections: `TEAM-PLAN.md`.
 
 ## The idea
 
@@ -47,13 +49,18 @@ Build order (the priority list):
 
 ## Stack and architecture
 
-- **Language / framework:** JavaScript. React + Vite + Three.js (react-three-fiber) frontend, Node.js + `ws` relay server. Everything is in `app/`, which is one npm package.
-- **Models** (keep the IDs in one config constant, e.g. `config.py` / `config.ts`): TBD. A fast open model on Token Factory for the live instructor.
+- **Language / framework:** TypeScript. React + Vite + Three.js (react-three-fiber) frontend, Node.js server (phone relay over WebSocket, Nebius instructor and examiner). A pnpm workspace (not `app/`): `apps/web`, `apps/server`, `packages/shared`.
+- **Models** (set in `apps/server/.env`): instructor `Qwen/Qwen3-30B-A3B-Instruct-2507`, examiner `Qwen/Qwen3-235B-A22B-Instruct-2507` (JSON schema), embeddings `Qwen/Qwen3-Embedding-8B`. Why: root `DECISIONS.md`.
 - **External APIs:** Nebius Token Factory; OpenStreetMap Overpass; Tavily (optional, Highway Code rules); OpenAI (comparison page only)
-- **Env vars:** see `.env.example`
-- **Layout:** TBD (list the top-level folders as they appear)
-- **Run locally:** TBD
-- **Test:** TBD
+- **Env vars:** `apps/server/.env.example` (Nebius key and model IDs), `apps/web/.env.example` (optional Google Maps keys). Never commit `.env`.
+- **Layout:**
+  - `apps/web/src/sim/`: simulation core (roads, raster, city layout, vehicle, traffic, signals, sat nav, faults, session)
+  - `apps/web/src/render/`: three.js parts per teammate (`city/`, `atmosphere/`, `traffic/`, `cabin/`); contract in `render/types.ts`
+  - `apps/web/src/app/`: app shell (menu, drive screen, HUD); `parts.ts` picks up each render part once it's merged
+  - `apps/web/public/osm/`: cached OSM extracts; `apps/web/src/routes/`: test routes and free-drive starts
+  - `apps/server/src/`: relay, instructor, debrief, reroute; `packages/shared/`: message and API types; `scripts/`: data builders
+- **Run locally:** `corepack enable && pnpm install`, then `pnpm --filter @lplate/server dev` (port 8080, `PORT=` to change) and `pnpm --filter @lplate/web dev` (port 5173; `SERVER_PORT=` if the server isn't on 8080). Open `http://localhost:5173/?route=goodmayes`. City-only preview (once `feat/city` is merged): `http://localhost:5173/src/render/city/preview/index.html`.
+- **Test:** `pnpm typecheck`, `pnpm test` (Vitest).
 
 ## Demo plan
 
