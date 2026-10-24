@@ -48,6 +48,7 @@ describe('sanitize', () => {
 
   it('only allows known commands and sensor states', () => {
     expect(sanitize('controller', { type: 'command', command: 'handbrake' })).toEqual({ type: 'command', command: 'handbrake' });
+    expect(sanitize('controller', { type: 'command', command: 'reverse' })).toEqual({ type: 'command', command: 'reverse' });
     expect(sanitize('controller', { type: 'command', command: 'self-destruct' })).toBeNull();
     expect(sanitize('controller', { type: 'sensor', status: 'denied' })).toEqual({ type: 'sensor', status: 'denied' });
     expect(sanitize('controller', { type: 'sensor', status: 'weird' })).toBeNull();
@@ -61,7 +62,9 @@ describe('sanitize', () => {
       handbrake: false,
       speedMph: 30,
       driving: true,
+      gear: 'D',
     });
+    expect(sanitize('host', { type: 'state', gear: 'R' })).toMatchObject({ gear: 'R' });
     expect(sanitize('host', { type: 'state', speedMph: 9999 })).toMatchObject({ speedMph: 0 });
   });
 });
