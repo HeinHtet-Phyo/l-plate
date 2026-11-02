@@ -1,4 +1,20 @@
-# L-Plate
+<div align="center">
+
+# 🚗 L-Plate
+
+### 🥇 1st Place Winner, Noetic × Nebius Open-Models Hackathon
+**Imperial College London · 24 October 2026**
+
+![1st Place](https://img.shields.io/badge/🥇_1st_Place-Noetic_×_Nebius_Hackathon-gold)
+![Imperial College London](https://img.shields.io/badge/Imperial_College-London-003E74)
+![Nebius](https://img.shields.io/badge/Nebius-Token_Factory-6E3CF5)
+![Three.js](https://img.shields.io/badge/three.js-react--three--fiber-black)
+
+</div>
+
+> 🏆 **Won 1st place** at the Noetic × Nebius open-models hackathon at Imperial College London, built in one day by a team of 5.
+>
+> *Team project. Original repository: [christopherwhite06/Nebius-Hack](https://github.com/christopherwhite06/Nebius-Hack)*
 
 Practise driving on real UK streets, with an AI driving instructor in the passenger seat.
 Built in one day for the Noetic x Nebius hackathon (2026-10-24).
